@@ -1,27 +1,5 @@
 {
-  "name": "pds-trabalho-cemigama",
-  "version": "1.0.0",
-  "description": "Trabalho escolar CEMI Gama 2025 para Projeto de Desenvolvimento de Software - Codexx telecom: Painel iPCx",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/wenbds/PDS-trabalho-Cemigama.git"
-  },
-  "keywords": [
-    "escolar",
-    "school"
-  ],
-  "author": "Graziela Marins, Isabely Vieira, Milena Rocha, Nicolas de Oliveira, Samuel Iizuka, Vinicius Pontes, Wendel Benício",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/wenbds/PDS-trabalho-Cemigama/issues"
-  },
-  "homepage": "https://github.com/wenbds/PDS-trabalho-Cemigama#readme",
   "dependencies": {
-    "aws-sdk": "^2.1692.0",
-    "bootstrap": "^5.3.6"
+    "bootstrap": "^5.3.7"
   }
 }
