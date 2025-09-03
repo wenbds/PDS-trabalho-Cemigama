@@ -1,0 +1,14 @@
+/* FONTES */
+@import "fonts.css";
+
+:root { color-scheme: only dark; font-size: 1.5em; }
+
+/* TAMANHOS */
+h1 {
+	font-size: 4em;
+}
+
+h2, h3, h4, h5 {
+	/* [Iizuka]
+	 no momento acho que não precisa mudar o tamanho? */
+}
