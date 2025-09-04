@@ -5,10 +5,19 @@
 
 /* TAMANHOS */
 h1 {
+	text-transform: uppercase;
 	font-size: 4em;
 }
 
 h2, h3, h4, h5 {
 	/* [Iizuka]
 	 no momento acho que não precisa mudar o tamanho? */
+}
+
+/* CORES */
+.text-primary {
+	color: #dfb572;
+}
+.text-secondary {
+	color: #be9083;
 }
