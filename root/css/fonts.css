@@ -4,44 +4,48 @@
 /* Títulos */
 h1,
 .league-gothic {
-  font-family: "League Gothic", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 400;
-  font-style: normal;
-  font-variation-settings:
-    "wdth" 100;
+font-family: "League Gothic", sans-serif;
+font-optical-sizing: auto;
+font-weight: 400;
+font-style: normal;
+font-variation-settings: "wdth" 100;
 }
 
 /* KHAND */
 /* Subtítulos, Texto */
 .khand-light {
-  font-family: "Khand", sans-serif;
-  font-weight: 300;
-  font-style: normal;
+font-family: "Khand", sans-serif;
+font-weight: 300;
+font-style: normal;
+font-size: 1.1em;
 }
 
+input, button,
 .khand-regular {
-  font-family: "Khand", sans-serif;
-  font-weight: 400;
-  font-style: normal;
+font-family: "Khand", sans-serif;
+font-weight: 400;
+font-style: normal;
+font-size: 1.1em;
 }
 
 h2, h3, h4, h5,
 .khand-medium {
-  font-family: "Khand", sans-serif;
-  font-weight: 500;
-  font-style: normal;
+font-family: "Khand", sans-serif;
+font-weight: 500;
+font-style: normal;
 }
 
 body,
 .khand-semibold {
-  font-family: "Khand", sans-serif;
-  font-weight: 600;
-  font-style: normal;
+font-family: "Khand", sans-serif;
+font-weight: 600;
+font-style: normal;
+font-size: 1.1em;
 }
 
 .khand-bold {
-  font-family: "Khand", sans-serif;
-  font-weight: 700;
-  font-style: normal;
+font-family: "Khand", sans-serif;
+font-weight: 700;
+font-style: normal;
+font-size: 1.1em;
 }

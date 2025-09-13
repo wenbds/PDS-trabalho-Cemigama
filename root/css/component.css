@@ -1,1 +1,55 @@
+/*
+.khand-semibold {
+  font-family: "Khand", sans-serif;
+  font-weight: 600;
+  font-style: normal;
+}
+*/
+.loginInput::placeholder,
+.loginInput:-ms-input-placeholder,
+.loginInput::-ms-input-placeholder{ /* Chrome, Firefox, Opera, Safari 10.1+ */
+  font-family: 'Khand', sans-serif;
+  font-weight: 600;
+  font-style: normal;
+  opacity: 1; /* Firefox */
+  color: #1F1825;
+}
 
+.mainLoginInput:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  font-family: 'Khand', sans-serif;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.mainLoginInput::-ms-input-placeholder { /* Microsoft Edge */
+  font-family: 'Khand', sans-serif;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.loginSmall {
+	text-align: left;
+	width: 100%;
+	margin-bottom: 16px;
+}
+
+/* ----- TELA DE LOGIN ----- */
+
+#login-side {
+	background-color: rgba(31, 24, 37, 1);
+	width: 45%;
+	height: 100%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#login-main {
+	padding: 8pc;
+	text-align: center;
+}
+
+#login-inputs {
+	padding: 2pc;
+	border-radius: 25px;
+	background-color: #110C15;
+}
