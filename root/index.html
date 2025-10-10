@@ -31,27 +31,27 @@
 		</header>
 
 		<!-- conteúdo -->
-		<div class="container-fluid h-100">
+		<div class="container">
 			<div class="row h-100"> <!-- background do log-in -->
 				<div class="col-12">
 					<div class="bg" style="background-image: url('asset/image/gradiente.jpg');
-						background-size: cover;
-						height: 100vh;">
+						background-size: cover;">
 						<div id="login-side" class="container-fluid">
 							<div id="login-main">
 								<h1 class="text-primary">Log In</h1>
 								<div id="login-inputs">
-									<form>
+									<form action="main.html">
 										<div class="form-group">
 											<input type="text" class="form-control" id="inputUsername" placeholder="Nome do usuário">
 										</div>
 										<div class="form-group">
 											<input type="password" class="form-control loginInput" id="inputPassword" placeholder="Senha">
 											<div class="loginSmall">
-												<a class="text-primary">Esqueci minha senha</a>
+												<a class="text-primary">Esqueci minha senha</a> <!-- TODO: Remover ou implementar pop-up -->
 											</div>
 										</div>
-										<button class="bg-primary">Entrar</button>
+										<input type="submit" class="bg-primary" value="Entrar">
+										<!-- TODO: Sistema de banco de dados, o sistema só te coloca no outra página. -->
 									</form>
 								</div>
 							</div>

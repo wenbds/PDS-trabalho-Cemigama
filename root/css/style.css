@@ -58,6 +58,13 @@ footer {
 	padding: 1.4rem;
 }
 
+hr {
+	background-color: var(--clr-dark);
+	border-style: none;
+	height: 5px;
+}
+
+input[type="submit"],
 button {
 	padding: 12px;
 	padding-left: 40px;
@@ -75,6 +82,7 @@ button {
 		color 77ms;
 }
 
+input[type="submit"]:hover,
 button:hover {
 	background-color: var(--clr-dark);
 	color: var(--clr-white);

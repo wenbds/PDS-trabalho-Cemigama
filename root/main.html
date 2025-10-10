@@ -16,17 +16,52 @@
 		</header>
 
 		<!-- conteúdo -->
-		<div class="container-fluid h-100">
+		<div class="container">
+			<div class="bg">
+				<div id="main-side">
+					<button class="marca-pag" id='marca0' data-mode=0 data-sel=true type="button">Dashboard</button>
+					<button class="marca-pag" id='marca1' data-mode=1 data-sel=false type="button">Cadastro</button>
+					<button class="marca-pag" id='marca2' data-mode=2 data-sel=false type="button">Entrada</button>
+					<button class="marca-pag" id='marca3' data-mode=3 data-sel=false type="button">Saída</button>
+					<button class="marca-pag" id='marca4' data-mode=4 data-sel=false type="button">Controle</button>
+					<button class="marca-pag" id='marca5' data-mode=5 data-sel=false type="button">Compras</button>
+				</div>
 
+				<div id="main-primary">
+					<h1 class="text-primary" id="main-title">Dashboard</h1>
+					<div class="section" data-mode=0 id="main0"> <!-- Dashboard -->
+						Teste Dashboard
+					</div>
+					<div class="section" data-mode=1 id="main1"> <!-- Cadastro -->
+						Teste Cadastro
+					</div>
+					<div class="section" data-mode=2 id="main2"> <!-- Entrada -->
+						Teste Entrada
+					</div>
+					<div class="section" data-mode=3 id="main3"> <!-- Saída -->
+						Teste Saída
+					</div>
+					<div class="section" data-mode=4 id="main4"> <!-- Controle -->
+						Teste Controle
+					</div>
+					<div class="section" data-mode=5 id="main5"> <!-- Compras -->
+						Teste Compras
+					</div>
+				</div>
+			</div>
 		</div>
+
+		<!-- Roda os scripts -->
+		<script type="text/javascript" src="main.js"></script>
 
 		<footer>
 			<h2 class="text-primary">
-				Plan & Decor
+			© Plan & Decor - Móveis Planejados e Interiores
 			</h2>
+			<small class="text-primary">Todos os direitos reservados.</small>
+			<hr/>
 			<p>
 			Desenvolvido como Projeto Final para <a class="text-secondary" href="https://cemigama.com.br"><u>Centro de Ensino Médio Integrado do Gama</u></div>
-			</p>
 		</footer>
 	</body>
 </html>

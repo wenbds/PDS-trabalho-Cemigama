@@ -33,6 +33,12 @@
 	margin-bottom: 16px;
 }
 
+.bg {
+	flex: row;
+	height: 100vh;
+	background-color: var(--clr-dark);
+}
+
 /* ----- TELA DE LOGIN ----- */
 
 #login-side {
@@ -52,4 +58,71 @@
 	padding: 2pc;
 	border-radius: 25px;
 	background-color: #110C15;
+}
+
+/* ----- TELA DASHBOARD ----- */
+
+#main-side {
+	float: left;
+	background-color: var(--clr-darker);
+	width: 25%;
+	height: 100%;
+	margin-right: auto;
+}
+
+#main-primary {
+	float: left;
+	padding: 25px;
+	background-color: var(--clr-dark);
+	width: 75%-var(padding);
+	height: 100%-var(padding);
+	margin-left: auto;
+}
+
+.marca-pag {
+	font-family: "Khand", sans-serif;
+	font-weight: 700;
+	font-style: normal;
+	font-size: 1.1em;
+	border-radius: 0px;
+	margin-top: 20;
+	margin-bottom: 20;
+	margin-left: 20%;
+	width: 80%;
+	background-color: var(--clr-darkest);
+	color: var(--clr-main);
+	text-align: left;
+
+	transition-timing-function: ease-out;
+	transition:
+		background-color 77ms,
+		color 77ms;
+		width: 77ms;
+		margin-left: 77ms;
+}
+.current, .marca-pag[data-sel=true] {
+	width: 100%;
+	margin-left: 0%;
+	background-color: var(--clr-main);
+	color: var(--clr-darker);
+}
+
+.marca-pag:hover {
+	width: 90%;
+	margin-left: 10%;
+	background-color: var(--clr-main);
+	color: var(--clr-darker);
+}
+
+.current:hover, .marca-pag[data-sel=true]:hover {
+	width: 100%;
+	margin-left: 0%;
+}
+
+#main-primary > div {
+	color: var(--clr-tert);
+	display: none;
+}
+#main-primary > div[data-active=true] {
+	display: block;
 }
