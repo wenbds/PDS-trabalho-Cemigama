@@ -8,7 +8,11 @@ Esse arquivo detecta cliques nos botões de marca página
 e esconde ou mostra elementos respectivamente ao botão
 pressionado.
 
-TODO@FEAT: Botões de marca página atualizam a página.
+TODO@FEAT: Integração com banco de dados.
+TODO@FEAT: Funcionalidade de gráficos.
+TODO@FEAT: Funcionalidade de lista de pesquisas.
+
+TODO@FEAT: Pop-ups e estilos de gerenciamento de tabelas (ex.: produtos).
 
  */
 

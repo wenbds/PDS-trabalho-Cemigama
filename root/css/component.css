@@ -71,11 +71,12 @@
 }
 
 #main-primary {
+	overflow-y: auto;
 	float: left;
 	padding: 25px;
 	background-color: var(--clr-dark);
 	width: 75%-var(padding);
-	height: 100%-var(padding);
+	height: 1080-var(padding);
 	margin-left: auto;
 }
 
@@ -84,13 +85,13 @@
 	font-weight: 700;
 	font-style: normal;
 	font-size: 1.1em;
-	border-radius: 0px;
+	border-radius: 40px 0 0 40px;
 	margin-top: 20;
 	margin-bottom: 20;
 	margin-left: 20%;
 	width: 80%;
 	background-color: var(--clr-darkest);
-	color: var(--clr-main);
+	color: var(--clr-white);
 	text-align: left;
 
 	transition-timing-function: ease-out;
@@ -101,10 +102,11 @@
 		margin-left: 77ms;
 }
 .current, .marca-pag[data-sel=true] {
+	border-radius: 0px;
 	width: 100%;
 	margin-left: 0%;
-	background-color: var(--clr-main);
-	color: var(--clr-darker);
+	background-color: var(--clr-dark);
+	color: var(--clr-main);
 }
 
 .marca-pag:hover {
@@ -115,14 +117,70 @@
 }
 
 .current:hover, .marca-pag[data-sel=true]:hover {
+	border-radius: 0px;
 	width: 100%;
 	margin-left: 0%;
+	background-color: var(--clr-dark);
+	color: var(--clr-seco);
 }
 
 #main-primary > div {
-	color: var(--clr-tert);
+	color: var(--clr-white);
 	display: none;
 }
 #main-primary > div[data-active=true] {
 	display: block;
+}
+
+.row {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	align-items: stretch;
+	width: 70vw;
+}
+.section > h2 {
+	color: var(--clr-main);
+	margin: 0px;
+}
+
+.fator {
+	flex-grow: 4;
+	font-size: 1.2em;
+	background-color: var(--clr-darker);
+	border-radius: 12px;
+	float: center;
+	margin: 12px;
+	padding: 13px;
+}
+.fator > h3 {
+	font-size: 1.1em;
+	color: var(--clr-seco);
+	margin: 0px;
+}
+.fator-reais {
+	color: var(--clr-seco);
+}
+
+.grafico > canvas {
+	margin: 10px;
+	background-color: var(--clr-darkest);
+	width: calc(100% - 1.4em - 10px);
+	height: calc(100% - 1.4em - 10px);
+}
+
+.com-barra > div {
+	background-color: var(--clr-darkest);
+	border-radius: 10px;
+	overflow-y: scroll; /* auto? Tem que cortar os itens para não puxar outros elementos */
+	width: 100%;
+	height: calc(500px - 1.5em);
+}
+
+.item-barra {
+	background-color: var(--clr-dark);
+	width: calc(100% - var(padding)*2);
+	padding: 8px;
+	margin-bottom: 3px;
+	height: 1.2em;
 }
