@@ -15,6 +15,7 @@ TODO@FEAT: Funcionalidade de lista de pesquisas.
 TODO@FEAT: Pop-ups e estilos de gerenciamento de tabelas (ex.: produtos).
 
  */
+console.log("hi");
 
 // Modo do dashboard
 const modos = {
@@ -63,3 +64,19 @@ for (const marca of marcaPags) {
 }
 
 updateModo(current); // inicializar com o modo que já existe
+
+//ー Dados ー//
+const carregaveis = [
+	[],
+	[],
+	[],
+	[],
+	[],
+	[]
+];
+// // - DASHBOARD - // //
+carregaveis[modos.dashboard][0] = []; // trocar por grafico
+
+// // - CADASTRO - // //
+//  Nível de produtos
+carregaveis [modos.cadastro][0] = new table();

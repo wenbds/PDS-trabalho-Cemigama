@@ -59,20 +59,97 @@
 								</div>
 							</div>
 						</div>
-						Teste Dashboard
 					</div>
+
+					<!-- TODO -->
+					<!-- Para os itens de tabelas, é necessário uma opção de pesquisa
+						e de adição de produtos. -->
 					<div class="section" data-mode=1 id="main1"> <!-- Cadastro -->
-						Teste Cadastro
+						<div class="row">
+							<div class="fator" id="s1-0">
+								<h3>Estoque desejável</h3>
+								<span id="s1-0n">0</span>
+							</div>
+						</div>
+						<div class="row">
+							<div class="fator tabela" id="s1-1">
+								<h3>Cadastro de Produtos</h3>
+								<table>
+									<thead>
+										<tr>
+											<th scope="col">Produto</th>
+											<th scope="col">Nível Mínimo</th>
+											<th scope="col">Nível Desejável</th>
+											<th scope="col">Custo Unitário (R$)</th>
+											<th scope="col">Preço Unitário (R$)</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<th scope="row">Teste</th>
+											<td>30</td>
+											<td>70</td>
+											<td>1000</td>
+											<td>1200</td>
+										</tr>
+									</tbody>
+									<tfoot>
+										<tr>
+											<th scope="row" colspan="3">Total</th>
+											<td>1000</td>
+											<td>1200</td>
+										</tr>
+									</tfoot>
+								</table>
+							</div>
+						</div>
 					</div>
+
 					<div class="section" data-mode=2 id="main2"> <!-- Entrada -->
-						Teste Entrada
+						<div class="row">
+							<div class="fator tabela" id="s1-1">
+								<h3>Entrada de Estoque</h3>
+								<table>
+									<thead>
+										<tr>
+											<th scope="col">Produto</th>
+											<th scope="col">Data</th>
+											<th scope="col">Tipo</th>
+											<th scope="col">Quantidade</th>
+											<th scope="col">Custo Unitário (R$)</th>
+											<th scope="col">Preço Unitário (R$)</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<th scope="row">Teste</th>
+											<td>00/00/0000</td>
+											<td>Imaginário</td>
+											<td>30</td>
+											<td>1000</td>
+											<td>1200</td>
+										</tr>
+									</tbody>
+									<tfoot>
+										<tr>
+											<th scope="row" colspan="4">Total</th>
+											<td>1000</td>
+											<td>1200</td>
+										</tr>
+									</tfoot>
+								</table>
+							</div>
+						</div>
 					</div>
+					
 					<div class="section" data-mode=3 id="main3"> <!-- Saída -->
 						Teste Saída
 					</div>
+
 					<div class="section" data-mode=4 id="main4"> <!-- Controle -->
 						Teste Controle
 					</div>
+
 					<div class="section" data-mode=5 id="main5"> <!-- Compras -->
 						Teste Compras
 					</div>
@@ -81,7 +158,8 @@
 		</div>
 
 		<!-- Roda os scripts -->
-		<script type="text/javascript" src="main.js"></script>
+		<script type="module" src="main.js"></script>
+		<!-- TODO: Trocar para type="module" quando estiver pronto p/ trocar para webhost -->
 
 		<footer>
 			<h2 class="text-primary">

@@ -89,6 +89,26 @@ button:hover {
 	color: var(--clr-white);
 }
 
+table {
+	width: 100%;
+	flex-grow: 1;
+	font-size: 1.2em;
+}
+
+thead, tfoot {
+	background-color: var(--clr-darkest);
+	color: var(--clr-seco);
+}
+
+tbody > tr:nth-of-type(even) {
+	background-color: var(--clr-dark);
+}
+
+th, td {
+	flex-grow: 5;
+	padding: 8px 12px;
+}
+
 /* CORES */
 .text-primary {
 	color: var(--clr-main);
