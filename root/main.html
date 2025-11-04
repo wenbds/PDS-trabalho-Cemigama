@@ -24,7 +24,7 @@
 					<button class="marca-pag" id='marca2' data-mode=2 data-sel=false type="button">Entrada</button>
 					<button class="marca-pag" id='marca3' data-mode=3 data-sel=false type="button">Saída</button>
 					<button class="marca-pag" id='marca4' data-mode=4 data-sel=false type="button">Controle</button>
-					<button class="marca-pag" id='marca5' data-mode=5 data-sel=false type="button">Compras</button>
+					<button class="marca-pag" id='marca5' data-mode=5 data-sel=false type="button">Vendas</button>
 				</div>
 
 				<div id="main-primary">
@@ -117,7 +117,7 @@
 											<th scope="col">Tipo</th>
 											<th scope="col">Quantidade</th>
 											<th scope="col">Custo Unitário (R$)</th>
-											<th scope="col">Preço Unitário (R$)</th>
+											<th scope="col">Valor Total (R$)</th>
 										</tr>
 									</thead>
 									<tbody>
@@ -143,7 +143,40 @@
 					</div>
 					
 					<div class="section" data-mode=3 id="main3"> <!-- Saída -->
-						Teste Saída
+						<div class="row">
+							<div class="fator tabela" id="s2-0">
+								<h3>Controle de Saída</h3>
+								<table>
+									<thead>
+										<tr>
+											<th scope="col">Produto</th>
+											<th scope="col">Data</th>
+											<th scope="col">Fornecedor</th>
+											<th scope="col">Quantidade</th>
+											<th scope="col">Custo Unitário (R$)</th>
+											<th scope="col">Valor Total (R$)</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<th scope="row">Teste</th>
+											<td>00/00/0000</td>
+											<td>Testadores Ltda.</td>
+											<td>30</td>
+											<td>1000</td>
+											<td>1200</td>
+										</tr>
+									</tbody>
+									<tfoot>
+										<tr>
+											<th scope="row" colspan="4">Total</th>
+											<td>1000</td>
+											<td>1200</td>
+										</tr>
+									</tfoot>
+								</table>
+							</div>
+						</div>
 					</div>
 
 					<div class="section" data-mode=4 id="main4"> <!-- Controle -->
@@ -172,20 +205,26 @@
 									<thead>
 										<tr>
 											<th scope="col">Produto</th>
-											<th scope="col">Quantidade</th>
 											<th scope="col">Data</th>
+											<th scope="col">Quantidade</th>
+											<th scope="col">Valor Unitário (R$)</th>
+											<th scope="col">Valor Total (R$)</th>
 										</tr>
 									</thead>
 									<tbody>
 										<tr>
 											<th scope="row">Teste</th>
-											<td>0</td>
 											<td>00/00/0000</td>
+											<td>0</td>
+											<td>300</td>
+											<td>0</td>
 										</tr>
 									</tbody>
 									<tfoot>
 										<tr>
-											<th scope="row">Total</th>
+											<th scope="row" colspan="2">Total</th>
+											<td>1000</td>
+											<td>1000</td>
 											<td>1000</td>
 										</tr>
 									</tfoot>
@@ -197,20 +236,26 @@
 									<thead>
 										<tr>
 											<th scope="col">Produto</th>
-											<th scope="col">Quantidade</th>
 											<th scope="col">Data</th>
+											<th scope="col">Quantidade</th>
+											<th scope="col">Valor Unitário (R$)</th>
+											<th scope="col">Valor Total (R$)</th>
 										</tr>
 									</thead>
 									<tbody>
 										<tr>
 											<th scope="row">Teste</th>
-											<td>0</td>
 											<td>00/00/0000</td>
+											<td>0</td>
+											<td>300</td>
+											<td>0</td>
 										</tr>
 									</tbody>
 									<tfoot>
 										<tr>
-											<th scope="row">Total</th>
+											<th scope="row" colspan=2>Total</th>
+											<td>1000</td>
+											<td>1000</td>
 											<td>1000</td>
 										</tr>
 									</tfoot>
@@ -221,7 +266,81 @@
 					</div>
 
 					<div class="section" data-mode=5 id="main5"> <!-- Compras -->
-						Teste Compras
+						<div class="row">
+							<div class="fator tabela" id="s5-0">
+								<h3>Registro de Compras</h>
+								<table>
+									<thead>
+										<tr>
+											<th scope="col">Produto</th>
+											<th scope="col">Data</th>
+											<th scope="col">Quantidade</th>
+											<th scope="col">Custo Unitário (R$)</th>
+											<th scope="col">Valor Total (R$)</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<th scope="row">Teste</th>
+											<td>00/00/0000</td>
+											<td>30</td>
+											<td>1000</td>
+											<td>30000</td>
+										</tr>
+									</tbody>
+									<tfoot>
+										<tr>
+											<th scope="row" colspan="3">Total</th>
+											<td>1000</td>
+											<td>1200</td>
+										</tr>
+									</tfoot>
+								</table>
+							</div>
+							<div class="fator tabela" id="s5-0">
+								<h3>Últimas Compras</h>
+								<table>
+									<thead>
+										<tr>
+											<th scope="col">Produto</th>
+											<th scope="col">Data</th>
+											<th scope="col">Quantidade</th>
+											<th scope="col">Custo (R$)</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<th scope="row">Teste</th>
+											<td>00/00/0000</td>
+											<td>30</td>
+											<td>1200</td>
+										</tr>
+									</tbody>
+									<tfoot>
+										<tr>
+											<th scope="row" colspan="3">Total</th>
+											<td>1200</td>
+										</tr>
+									</tfoot>
+								</table>
+							</div>
+						</div>
+	
+						<div class="row">
+							<div class="fator" id="s5-1">
+								<h3>Total de Pedidos</h3>
+								<span id="s5-1n">0</span>
+							</div>
+							<div class="fator" id="s5-2">
+								<h3>Valor Total de Compras</h3>
+								<span class="fator-reais">R$</span>
+								<span id="s5-2n">0</span>
+							</div>
+							<div class="fator" id="s5-1">
+								<h3>Pedidos Pendentes</h3>
+								<span id="s5-1n">0</span>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>

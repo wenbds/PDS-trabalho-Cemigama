@@ -30,11 +30,11 @@ let current = modos.dashboard; // o modo selecionado
 
 const modosNomes = [
 	"Dashboard",
-	"Cadastro",
-	"Entrada",
-	"Saída",
-	"Controle",
-	"Compras"
+	"Cadastro de Produtos",
+	"Entrada de Estoque",
+	"Saída de Produtos",
+	"Controle de Estoque",
+	"Registro de Vendas"
 ]
 
 // Anatomia
@@ -66,7 +66,7 @@ for (const marca of marcaPags) {
 updateModo(current); // inicializar com o modo que já existe
 
 //ー Dados ー//
-const carregaveis = [
+const carregaveis = [ // Dados dos Elementos ("s0-0n", "s0-1n", etc.)
 	[],
 	[],
 	[],
