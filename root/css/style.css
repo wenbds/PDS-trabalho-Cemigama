@@ -17,6 +17,11 @@ body {
 	margin: 0px;	
 }
 
+navbar {
+	flex-wrap: nowrap;
+	flex-direction: row;
+}
+
 /* TAMANHOS */
 h1 {
 	margin: 4px;
