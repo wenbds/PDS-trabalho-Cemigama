@@ -5,7 +5,7 @@
 	bom em fazer e que não sou programador. 😅
 
 	TODO:
-	- A funcionalidade de log-in.
+	- A funcionalidade de tabelas e gráficos.
 	- O banco de dados.
 -->
 <html lang="pt">
