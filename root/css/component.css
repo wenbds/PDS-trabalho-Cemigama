@@ -39,6 +39,21 @@
 	background-color: var(--clr-dark);
 }
 
+.navbt {
+	display: flex;
+	margin: 0px;
+}
+.navbt > form {
+	float: right;
+	align: center;
+}
+.navbt > button {
+	color: var(--clr-main);
+	padding: 2px 8px;
+	margin: 0px 12px;
+	background-color: rgba(0,0,0, 0);
+}
+
 /* ----- TELA DE LOGIN ----- */
 
 #login-side {
