@@ -8,31 +8,30 @@ Esse arquivo detecta cliques nos botões de marca página
 e esconde ou mostra elementos respectivamente ao botão
 pressionado.
 
-TODO@FEAT: Integração com banco de dados.
-TODO@FEAT: Funcionalidade de gráficos.
-TODO@FEAT: Funcionalidade de lista de pesquisas.
-
+TODO@FEAT: Fazer tabelas ser alteráveis.
 TODO@FEAT: Pop-ups e estilos de gerenciamento de tabelas (ex.: produtos).
+TODO@FEAT: Funcionalidade de gráficos.
 
  */
-import { default as table } from './tables.js';
+import { default as fator, generico, numerico } from './fator.js';
+import { default as table, combarra } from './tables.js';
 import { default as grafico } from './grafico.js';
 
 // Modo do dashboard
 const modos = {
 		dashboard:0,
 		cadastro:1,
-		entrada:2,
+		alterar:2,
 		saida:3,
 		controle:4,
-		compras:5
+		vendas:5
 	}
 let current = modos.dashboard; // o modo selecionado
 
 const modosNomes = [
 	"Dashboard",
 	"Cadastro de Produtos",
-	"Entrada de Estoque",
+	"Alterar Produtos",
 	"Saída de Produtos",
 	"Controle de Estoque",
 	"Registro de Vendas"
@@ -49,10 +48,13 @@ const marcaPags = document.querySelectorAll('.marca-pag');
 // Muda o modo do Dashboard e atualiza a página de
 // acordo com o modo selecionado.
 function updateModo (modo) {
+	current = modo;
+	tela.dataset.current = current;
 	currentElement.style.display = 'none';
 	currentElement = document.getElementById('main'+modo.toString());
 	currentElement.style.display = 'block';
-	title.innerHTML = modosNomes[modo];
+	title.innerHTML = modosNomes[current];
+	renderizarPag();
 }
 
 for (const marca of marcaPags) {
@@ -64,20 +66,105 @@ for (const marca of marcaPags) {
 	});
 }
 
-updateModo(current); // inicializar com o modo que já existe
 
 //ー Dados ー//
+/* 
+	Este arquivo recebe dados através do `root/main/data.php`.
+*/
+
+var bd = [ // Dados armazenados do banco de dados. Atualizados com ``
+	[], [], [] // 0: produtos, 1: vendas 2: clientes
+]
+
+const plugarDados = '../main/data.php';
+const pmethod = 'POST';
+var pbuffer;
+var ppedido = {
+	quero: 'nada'
+}
+
+async function pedir (pedido) {
+	ppedido.quero = pedido;
+	pbuffer = JSON.stringify(ppedido);
+	var resposta = await fetch(plugarDados, {
+		method: pmethod,
+		body: pbuffer
+	})
+		.then(r => r.json());
+	
+	console.log(resposta);
+	return resposta
+}
+
 const carregaveis = [ // Dados dos Elementos ("s0-0n", "s0-1n", etc.)
-	[],
-	[],
-	[],
-	[],
-	[],
-	[]
+	[], [], [],
+	  [], [],
+	    []
 ];
 // // - DASHBOARD - // //
-carregaveis [modos.dashboard][0] = new grafico();
+carregaveis [modos.dashboard][0] = new numerico(0,0,'Total em Estoque', false,
+	function () { return bd[0].length });
+carregaveis [modos.dashboard][1] = new numerico(0,1,'Custo Total', true);
+carregaveis [modos.dashboard][2] = new numerico(0,2,'Faturamento', true);
+carregaveis [modos.dashboard][3] = new grafico(0,3,'Saldo Acumulado');
+carregaveis [modos.dashboard][4] = new combarra(0,4,'Estoque', bd[0]); 
 
 // // - CADASTRO - // //
 //  Nível de produtos
-carregaveis [modos.cadastro][0] = new table();
+carregaveis [modos.cadastro][0] = new numerico(1,0,'Estoque Desejável', false);
+carregaveis [modos.cadastro][1] = new table(1,1,'Cadastro de Produtos');
+
+// // - ALTERAR - // //
+// Alterar produtos
+carregaveis [modos.alterar][0] = new table(2,0,'Produtos Cadastrados');
+
+// // - SAÍDA - // //
+// Venda do produto/relatório com o custo e lucro obtido
+carregaveis [modos.saida][0] = new numerico(3,0,'Custo Total', true);
+carregaveis [modos.saida][1] = new numerico(3,1,'Lucro Total', true);
+carregaveis [modos.saida][2] = new table(3,2,'Venda de Produtos');
+
+// // - CONTROLE - // //
+// Imprime o que está de estoque baixo, produtos menos vendidos e mais vendidos.
+carregaveis [modos.controle][0] = new table(4,0,'AAAAAAAAAAAA');
+
+function renderizarPag () {
+	const praCarregar = carregaveis[current];
+	const strObjetos  = 's'+current+'-';
+	let strCurrent;
+	let objCurrent;
+	let elmCurrent;
+	for (let i = 0; i < praCarregar.length; i++) {
+		console.log(i);
+		strCurrent = strObjetos + i.toString();
+		objCurrent = praCarregar[i];
+		elmCurrent = document.getElementById(strCurrent + 'n');
+
+		console.log('Carregando ' + strCurrent + ':',objCurrent);
+		objCurrent.render(elmCurrent); // TODO Usar "elmcurrent" talvez seja perigoso? Porque muda constantemente
+		                               //      e `fator` tem uma referência interna ao elemento já (então é redundante)
+	}
+}
+
+const ATLZR_PRODUTOS = 1 << 0;
+const ATLZR_VENDAS   = 1 << 1;
+const ATLZR_CLIENTES = 1 << 2;
+const ATLZR_TODOS    = ATLZR_PRODUTOS
+                       | ATLZR_VENDAS
+	                 | ATLZR_CLIENTES;
+
+function atualizarDados (bin) {
+	for (let i = 0; i < bd.length; i++) {
+		if (!(bin & (1 << i))) { continue; }
+		bd[i] = pedir(i);
+	}
+}
+
+// // 
+//ー Funcionamento ー//
+                  // //
+
+// TODO Os valores do BD devem ser atualizados toda vez que algo é alterado no BD.
+atualizarDados(ATLZR_TODOS);
+
+updateModo(current); // inicializar com o modo que já existe

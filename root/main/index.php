@@ -27,13 +27,13 @@ if (empty($_SESSION["session"])) {
 				<div id="main-side">
 					<button class="marca-pag" id='marca0' data-mode=0 data-sel=true type="button">Dashboard</button>
 					<button class="marca-pag" id='marca1' data-mode=1 data-sel=false type="button">Cadastro</button>
-					<button class="marca-pag" id='marca2' data-mode=2 data-sel=false type="button">Entrada</button>
+					<button class="marca-pag" id='marca2' data-mode=2 data-sel=false type="button">Alterar</button>
 					<button class="marca-pag" id='marca3' data-mode=3 data-sel=false type="button">Saída</button>
 					<button class="marca-pag" id='marca4' data-mode=4 data-sel=false type="button">Controle</button>
 					<button class="marca-pag" id='marca5' data-mode=5 data-sel=false type="button">Vendas</button>
 				</div>
 
-				<div id="main-primary">
+				<div id="main-primary" data-current=0>
 					<h1 class="text-primary" id="main-title">Dashboard</h1>
 					<div class="section" data-mode=0 id="main0"> <!-- Dashboard -->
 						<h2>Relatório de Estoque</h2>
@@ -111,7 +111,7 @@ if (empty($_SESSION["session"])) {
 						</div>
 					</div>
 
-					<div class="section" data-mode=2 id="main2"> <!-- Entrada -->
+					<div class="section" data-mode=2 id="main2"> <!-- Alterar -->
 						<div class="row">
 							<div class="fator tabela" id="s2-0">
 								<h3>Entrada de Estoque</h3>
@@ -150,7 +150,19 @@ if (empty($_SESSION["session"])) {
 					
 					<div class="section" data-mode=3 id="main3"> <!-- Saída -->
 						<div class="row">
-							<div class="fator tabela" id="s2-0">
+							<div class="fator" id="s2-0"> <!-- custo total -->
+								<h3>Custo Total</h3>
+								<span class="fator-reais">R$</span>
+								<span id="s2-0n">0</span>
+							</div>
+							<div class="fator" id="s2-1"> <!-- lucro total -->
+								<h3>Faturamento</h3>
+								<span class="fator-reais">R$</span>
+								<span id="s2-1n">0</span>
+							</div>
+						</div>
+						<div class="row">
+							<div class="fator tabela" id="s2-3">
 								<h3>Controle de Saída</h3>
 								<table>
 									<thead>
@@ -192,16 +204,6 @@ if (empty($_SESSION["session"])) {
 								<h3>Total em Estoque</h3>
 								<span class="fator-reais">R$</span>
 								<span id="s4-0n">0</span>
-							</div>
-							<div class="fator" id="s4-1">
-								<h3>Custo Total</h3>
-								<span class="fator-reais">R$</span>
-								<span id="s4-1n">0</span>
-							</div>
-							<div class="fator" id="s4-2">
-								<h3>Faturamento</h3>
-								<span class="fator-reais">R$</span>
-								<span id="s4-2n">0</span>
 							</div>
 						</div>
 						<div class="row">
