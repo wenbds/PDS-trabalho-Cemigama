@@ -66,15 +66,21 @@ for (const marca of marcaPags) {
 	});
 }
 
+// Delay para alguns objetos carregarem p/ JavaScript
+const wait = async (ms) => new Promise(resolve => setTimeout(resolve, ms));
+wait(1200);
 
 //ー Dados ー//
 /* 
 	Este arquivo recebe dados através do `root/main/data.php`.
 */
 
-var bd = [ // Dados armazenados do banco de dados. Atualizados com ``
+const bd = [ // Dados armazenados do banco de dados. Atualizados com ``
 	[], [], [] // 0: produtos, 1: vendas 2: clientes
 ]
+const bdProdutos = bd[0];
+const bdVendas   = bd[1];
+const bdClientes = bd[2];
 
 const plugarDados = '../main/data.php';
 const pmethod = 'POST';
@@ -92,19 +98,39 @@ async function pedir (pedido) {
 	})
 		.then(r => r.json());
 	
-	console.log(resposta);
 	return resposta
 }
 
-const carregaveis = [ // Dados dos Elementos ("s0-0n", "s0-1n", etc.)
+const BDFUNC_TOTAL = 0;
+function bdFunc (val, arg) {
+	switch (val) {
+		case BDFUNC_TOTAL:
+			let total = 0.0;
+			for (const obj in bdProdutos) {
+				if (!obj[arg]) {
+					console.warn('Objeto inesperado no banco de produtos:',obj,'(não tem',arg,')');
+					continue;
+				}
+				total += Number.parseFloat(obj[arg]);
+			}
+			return total;
+		default:
+			console.warn('Função desconhecida:',val);
+	}
+}
+
+const carregaveis = [ // Elementos de dados ("s0-0", "s0-1", etc.)
 	[], [], [],
 	  [], [],
 	    []
 ];
 // // - DASHBOARD - // //
 carregaveis [modos.dashboard][0] = new numerico(0,0,'Total em Estoque', false,
-	function () { return bd[0].length });
-carregaveis [modos.dashboard][1] = new numerico(0,1,'Custo Total', true);
+	function () { return bdProdutos.length; },
+	false);
+carregaveis [modos.dashboard][1] = new numerico(0,1,'Custo Total', true,
+	function () { return bdFunc (BDFUNC_TOTAL, 'custoUni'); },
+	false);
 carregaveis [modos.dashboard][2] = new numerico(0,2,'Faturamento', true);
 carregaveis [modos.dashboard][3] = new grafico(0,3,'Saldo Acumulado');
 carregaveis [modos.dashboard][4] = new combarra(0,4,'Estoque', bd[0]); 
@@ -116,7 +142,14 @@ carregaveis [modos.cadastro][1] = new table(1,1,'Cadastro de Produtos');
 
 // // - ALTERAR - // //
 // Alterar produtos
-carregaveis [modos.alterar][0] = new table(2,0,'Produtos Cadastrados');
+carregaveis [modos.alterar][0] = new table(2,0,'Produtos Cadastrados', bdProdutos, [
+		{nome:'Produto',total:false,get: x => x.nome},
+		{nome:'Distribuidora',total:false,get: x => x.distribuidora},
+		{nome:'Data',total:false,get: x => x.data },
+		{nome:'Quantidade',total:true,get: x => x.estoq },
+		{nome:'Custo Unitário (R$)',total:true,get: x => x.custoUni },
+		{nome:'Valor Total (R$)',total:true,get: x => x.custoUni * x.estoq }
+	 ]);
 
 // // - SAÍDA - // //
 // Venda do produto/relatório com o custo e lucro obtido
@@ -135,13 +168,12 @@ function renderizarPag () {
 	let objCurrent;
 	let elmCurrent;
 	for (let i = 0; i < praCarregar.length; i++) {
-		console.log(i);
 		strCurrent = strObjetos + i.toString();
 		objCurrent = praCarregar[i];
 		elmCurrent = document.getElementById(strCurrent + 'n');
 
 		console.log('Carregando ' + strCurrent + ':',objCurrent);
-		objCurrent.render(elmCurrent); // TODO Usar "elmcurrent" talvez seja perigoso? Porque muda constantemente
+		objCurrent.render();           // TODO Usar "elmcurrent" talvez seja perigoso? Porque muda constantemente
 		                               //      e `fator` tem uma referência interna ao elemento já (então é redundante)
 	}
 }
@@ -153,10 +185,13 @@ const ATLZR_TODOS    = ATLZR_PRODUTOS
                        | ATLZR_VENDAS
 	                 | ATLZR_CLIENTES;
 
-function atualizarDados (bin) {
+// Atualiza a coleção do BD especificado
+// ex.: atualizarDados (ATLZR_VENDAS | ATLZR_CLIENTES);
+//	atualiza as coleções vendas e clientes.
+async function atualizarDados (bin) {
 	for (let i = 0; i < bd.length; i++) {
 		if (!(bin & (1 << i))) { continue; }
-		bd[i] = pedir(i);
+		bd[i] = await pedir(i);
 	}
 }
 
@@ -165,6 +200,7 @@ function atualizarDados (bin) {
                   // //
 
 // TODO Os valores do BD devem ser atualizados toda vez que algo é alterado no BD.
-atualizarDados(ATLZR_TODOS);
+await atualizarDados(ATLZR_TODOS);
 
-updateModo(current); // inicializar com o modo que já existe
+await updateModo(current); // inicializar com o modo que já existe
+console.log(bd);

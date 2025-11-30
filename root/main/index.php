@@ -80,7 +80,7 @@ if (empty($_SESSION["session"])) {
 						<div class="row">
 							<div class="fator tabela" id="s1-1">
 								<h3>Cadastro de Produtos</h3>
-								<table>
+								<table id="s1-1n">
 									<thead>
 										<tr>
 											<th scope="col">Produto</th>
@@ -115,7 +115,7 @@ if (empty($_SESSION["session"])) {
 						<div class="row">
 							<div class="fator tabela" id="s2-0">
 								<h3>Entrada de Estoque</h3>
-								<table>
+								<table id="s2-0n">
 									<thead>
 										<tr>
 											<th scope="col">Produto</th>
@@ -164,7 +164,7 @@ if (empty($_SESSION["session"])) {
 						<div class="row">
 							<div class="fator tabela" id="s2-3">
 								<h3>Controle de Saída</h3>
-								<table>
+								<table id="s2-3n">
 									<thead>
 										<tr>
 											<th scope="col">Produto</th>
@@ -209,7 +209,7 @@ if (empty($_SESSION["session"])) {
 						<div class="row">
 							<div class="fator tabela" id="s4-3">
 								<h3>Entradas Recentes</h3>
-								<table>
+								<table id="s4-3n">
 									<thead>
 										<tr>
 											<th scope="col">Produto</th>
@@ -240,7 +240,7 @@ if (empty($_SESSION["session"])) {
 							</div>
 							<div class="fator tabela" id="s4-4">
 								<h3>Saídas Recentes</h3>
-								<table>
+								<table id="s4-4n">
 									<thead>
 										<tr>
 											<th scope="col">Produto</th>
@@ -276,8 +276,8 @@ if (empty($_SESSION["session"])) {
 					<div class="section" data-mode=5 id="main5"> <!-- Compras -->
 						<div class="row">
 							<div class="fator tabela" id="s5-0">
-								<h3>Registro de Compras</h>
-								<table>
+								<h3>Registro de Compras</h3>
+								<table id="s5-0n">
 									<thead>
 										<tr>
 											<th scope="col">Produto</th>
@@ -306,7 +306,7 @@ if (empty($_SESSION["session"])) {
 								</table>
 							</div>
 							<div class="fator tabela" id="s5-0">
-								<h3>Últimas Compras</h>
+								<h3>Últimas Compras</h3>
 								<table>
 									<thead>
 										<tr>
