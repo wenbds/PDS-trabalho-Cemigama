@@ -2,7 +2,7 @@
 session_start();
 if (empty($_SESSION["session"])) {
 	echo "Sem sessão";
-	header('location: ./?err=denied');
+	header('location: ../?error=denied');
 	exit();
 }
 ?>
@@ -24,6 +24,7 @@ if (empty($_SESSION["session"])) {
 		<!-- conteúdo -->
 		<div class="container">
 			<div class="bg">
+				<img class="bgImg" src="../asset/image/giratorio.png">
 				<div id="main-side">
 					<button class="marca-pag" id='marca0' data-mode=0 data-sel=true type="button">Dashboard</button>
 					<button class="marca-pag" id='marca1' data-mode=1 data-sel=false type="button">Cadastro</button>
@@ -47,20 +48,25 @@ if (empty($_SESSION["session"])) {
 								<span class="fator-reais">R$</span>
 								<span id="s0-1n">0</span>
 							</div>
-							<div class="fator" id="s0-2"> <!-- faturamento -->
-								<h3>Faturamento</h3>
+							<div class="fator" id="s0-2"> <!-- lucro total -->
+								<h3>Custo Total</h3>
 								<span class="fator-reais">R$</span>
 								<span id="s0-2n">0</span>
 							</div>
+							<div class="fator" id="s0-3"> <!-- faturamento -->
+								<h3>Faturamento</h3>
+								<span class="fator-reais">R$</span>
+								<span id="s0-3n">0</span>
+							</div>
 						</div>
 						<div class="row">
-							<div class="fator grafico" id="s0-3"> <!-- saldo acumulado -->
+							<div class="fator grafico" id="s0-4"> <!-- saldo acumulado -->
 								<h3>Saldo Acumulado</h3>
-								<canvas id="s0-3n"></canvas>
+								<canvas id="s0-4n"></canvas>
 							</div>
-							<div class="fator com-barra" id="s0-4"> <!-- estoque -->
+							<div class="fator com-barra" id="s0-5"> <!-- estoque -->
 								<h3>Estoque</h3>
-								<div id="s0-4n">
+								<div id="s0-5n">
 									<div class="item-barra">Teste</div>
 								</div>
 							</div>
@@ -358,6 +364,7 @@ if (empty($_SESSION["session"])) {
 		<script type="module" src="../js/main.js"></script>
 		<!-- TODO: Trocar para type="module" quando estiver pronto p/ trocar para webhost -->
 
+		<div id="modal-bg" class="modal-bg"></div>
 		<?php
 			include_once '../footer.php';
 		?>

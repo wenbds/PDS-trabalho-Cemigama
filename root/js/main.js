@@ -77,21 +77,18 @@ wait(1200);
 
 const bd = [ // Dados armazenados do banco de dados. Atualizados com ``
 	[], [], [] // 0: produtos, 1: vendas 2: clientes
-]
-const bdProdutos = bd[0];
-const bdVendas   = bd[1];
-const bdClientes = bd[2];
+];
 
 const plugarDados = '../main/data.php';
 const pmethod = 'POST';
-var pbuffer;
 var ppedido = {
 	quero: 'nada'
 }
 
+// Extrai banco de dados completo
 async function pedir (pedido) {
 	ppedido.quero = pedido;
-	pbuffer = JSON.stringify(ppedido);
+	const pbuffer = JSON.stringify(ppedido);
 	var resposta = await fetch(plugarDados, {
 		method: pmethod,
 		body: pbuffer
@@ -101,23 +98,56 @@ async function pedir (pedido) {
 	return resposta
 }
 
+var psvar = {
+	quero: 3, isso: ''
+}
+// Extrai um valor do BD exclusivo a variáveis de servidor
+async function svar (nomeVar) {
+	psvar.isso = nomeVar;
+	const pbuffer = JSON.stringify(psvar);
+	var resposta = await fetch(plugarDados, {
+		method: pmethod,
+		body: pbuffer
+	})
+		.then(r => r.json());
+
+	return resposta ? resposta.val : null
+}
+
 const BDFUNC_TOTAL = 0;
+const BDFUNC_TOTAL_QNT = 1;
 function bdFunc (val, arg) {
+	const collection = bd[0];
+	var index;
 	switch (val) {
 		case BDFUNC_TOTAL:
 			let total = 0.0;
-			for (const obj in bdProdutos) {
-				if (!obj[arg]) {
+			for (const obj in collection) {
+				index = collection[obj]
+				if (!index[arg]) {
 					console.warn('Objeto inesperado no banco de produtos:',obj,'(não tem',arg,')');
 					continue;
 				}
-				total += Number.parseFloat(obj[arg]);
+				total += Number.parseFloat(index[arg]);
 			}
 			return total;
+		case BDFUNC_TOTAL_QNT:
+			let totalQ = 0.0;
+			for (const obj in collection) {
+				index = collection[obj]
+				if (!index[arg] || !index.estoq) {
+					console.warn('Objeto inesperado no banco de produtos:',obj,'(não tem',arg,')');
+					continue;
+				}
+				totalQ += Number.parseFloat(index[arg]) * Number.parseFloat(index.estoq);
+			}
+			return totalQ;
 		default:
 			console.warn('Função desconhecida:',val);
 	}
 }
+
+function formatDinheiro (val) { return Number.parseFloat(val).toFixed(2); }
 
 const carregaveis = [ // Elementos de dados ("s0-0", "s0-1", etc.)
 	[], [], [],
@@ -126,29 +156,48 @@ const carregaveis = [ // Elementos de dados ("s0-0", "s0-1", etc.)
 ];
 // // - DASHBOARD - // //
 carregaveis [modos.dashboard][0] = new numerico(0,0,'Total em Estoque', false,
-	function () { return bdProdutos.length; },
+	async function () { return bdFunc (BDFUNC_TOTAL, 'estoq'); },
 	false);
 carregaveis [modos.dashboard][1] = new numerico(0,1,'Custo Total', true,
-	function () { return bdFunc (BDFUNC_TOTAL, 'custoUni'); },
+	function () { return bdFunc (BDFUNC_TOTAL_QNT, 'custoUni'); },
 	false);
-carregaveis [modos.dashboard][2] = new numerico(0,2,'Faturamento', true);
-carregaveis [modos.dashboard][3] = new grafico(0,3,'Saldo Acumulado');
-carregaveis [modos.dashboard][4] = new combarra(0,4,'Estoque', bd[0]); 
+carregaveis [modos.dashboard][2] = new numerico(0,2,'Faturamento', true,
+	function () { return bdFunc (BDFUNC_TOTAL_QNT, 'precoUni'); },
+	false);
+carregaveis [modos.dashboard][3] = new numerico(0,3,'Lucro', true,
+	function () { return bdFunc (BDFUNC_TOTAL_QNT, 'precoUni') - bdFunc (BDFUNC_TOTAL_QNT, 'custoUni'); },
+	false);
+carregaveis [modos.dashboard][4] = new grafico(0,4,'Saldo Acumulado');
+carregaveis [modos.dashboard][5] = new combarra(0,5,'Estoque', 0); 
 
 // // - CADASTRO - // //
 //  Nível de produtos
-carregaveis [modos.cadastro][0] = new numerico(1,0,'Estoque Desejável', false);
-carregaveis [modos.cadastro][1] = new table(1,1,'Cadastro de Produtos');
+var estoqDesejavel = await svar('estoqDesejavel');
+carregaveis [modos.cadastro][0] = new numerico(1,0,'Estoque Desejável', false,
+	async function () {
+		estoqDesejavel = await svar('estoqDesejavel');
+		return estoqDesejavel;
+	},
+	true);
+carregaveis [modos.cadastro][1] = new table(1,1,'Cadastro de Produtos', 0, [
+		{nome:'Produto',total:false,get: x => x.nome},
+		{nome:'Nível Mínimo',total:false,get: x => x.estoqMinimo},
+		{nome:'Nível Desejável',total:false,get: x => x.estoq*estoqDesejavel}, // TODO não lembro da fórmula
+		{nome:'Quantidade',total:true,increment:true,get: x => x.estoq },
+		{nome:'Custo Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.custoUni)},
+		{nome:'Preço Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.precoUni)},
+		{nome:'Lucro Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.precoUni - x.custoUni)}
+	]);
 
 // // - ALTERAR - // //
 // Alterar produtos
-carregaveis [modos.alterar][0] = new table(2,0,'Produtos Cadastrados', bdProdutos, [
+carregaveis [modos.alterar][0] = new table(2,0,'Produtos Cadastrados', 0, [
 		{nome:'Produto',total:false,get: x => x.nome},
 		{nome:'Distribuidora',total:false,get: x => x.distribuidora},
-		{nome:'Data',total:false,get: x => x.data },
-		{nome:'Quantidade',total:true,get: x => x.estoq },
-		{nome:'Custo Unitário (R$)',total:true,get: x => x.custoUni },
-		{nome:'Valor Total (R$)',total:true,get: x => x.custoUni * x.estoq }
+		{nome:'Quantidade',total:true,increment:true,get: x => x.estoq },
+		{nome:'Custo Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.custoUni )},
+		{nome:'Preço Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.precoUni)},
+		{nome:'Lucro (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.precoUni * x.estoq - x.custoUni * x.estoq)}
 	 ]);
 
 // // - SAÍDA - // //
@@ -161,6 +210,7 @@ carregaveis [modos.saida][2] = new table(3,2,'Venda de Produtos');
 // Imprime o que está de estoque baixo, produtos menos vendidos e mais vendidos.
 carregaveis [modos.controle][0] = new table(4,0,'AAAAAAAAAAAA');
 
+const context = { bd:bd }
 function renderizarPag () {
 	const praCarregar = carregaveis[current];
 	const strObjetos  = 's'+current+'-';
@@ -173,8 +223,7 @@ function renderizarPag () {
 		elmCurrent = document.getElementById(strCurrent + 'n');
 
 		console.log('Carregando ' + strCurrent + ':',objCurrent);
-		objCurrent.render();           // TODO Usar "elmcurrent" talvez seja perigoso? Porque muda constantemente
-		                               //      e `fator` tem uma referência interna ao elemento já (então é redundante)
+		objCurrent.render(context);
 	}
 }
 
@@ -203,4 +252,3 @@ async function atualizarDados (bin) {
 await atualizarDados(ATLZR_TODOS);
 
 await updateModo(current); // inicializar com o modo que já existe
-console.log(bd);

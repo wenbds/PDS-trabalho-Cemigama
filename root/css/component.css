@@ -34,9 +34,28 @@
 }
 
 .bg {
+	z-index: -2;
 	flex: row;
 	height: 100vh;
-	background-color: var(--clr-dark);
+	background-color: rgba(1,1,1,0); /* var(--clr-dark); */
+}
+
+@keyframes rotation {
+	from { transform: translate(-25%,-25%) rotate(0deg); }
+	to {transform: translate(-25%,-25%) rotate(360deg); }
+}
+.bgImg {
+	background-color: var(--clr-main);
+	position: fixed;
+	top: 0;
+	z-index: -1;
+	width: 150vw;
+	height: 150vw;
+
+	animation-name: rotation;
+	animation-duration: 122.5s;
+	animation-timing-function: linear;
+	animation-iteration-count: infinite;
 }
 
 .navbt {
@@ -52,6 +71,105 @@
 	padding: 2px 8px;
 	margin: 0px 12px;
 	background-color: rgba(0,0,0, 0);
+}
+
+@keyframes popup {
+	from { margin-top: 9vh; }
+	to { margin-top: 15vh; }
+}
+
+.normal {
+	background-color: var(--clr-dark);
+	border-color: rgba(0,0,0,0);
+}
+.error {
+	background-color: var(--clr-dark);
+	border-color: #f66;
+}
+.popup.error h2 { color: #f66; }
+.warning {
+	background-color: var(--clr-dark);
+	border-color: #ff6;
+}
+.popup.warning h2 { color: #ff6; }
+.popup {
+	max-width: 80vw;
+	flex-direction: column;
+	display: flex;
+	font-size: 1.2em;
+	padding: 12px 24px;
+	border-width: 4px;
+	border-radius: 20px;
+	border-style: solid;
+	position: fixed;
+	margin: 15vh 0;
+	z-index: 64;
+	transform: translate(-50%, 0%);
+
+	box-shadow: 0 5px 8px rgba(12,0,22,0.2);
+	animation-name: popup;
+	animation-duration: 127ms;
+	animation-timing-function: ease-out;
+}
+.popup h2 { font-size: 2.0em; }
+.popup h2, .popup p, .popup input {
+	margin: 4px 0px;
+}
+
+.modal-bg {
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 32;
+	position: fixed;
+	justify-content: center;
+	visibility: hidden;
+	background-color: rgba(8,0,12,0.5);
+	opacity: 0;
+}
+.modal-bg.show {
+	visibility: visible;
+	opacity: 1;
+}
+
+.close {
+	right: 12px;
+	top: 12px;
+	align-self: center;
+	text-align: center;
+	position: absolute;
+	color: var(--clr-white);
+	width: 40px;
+	height: 40px;
+	padding: 2px;
+	background-color: var(--clr-dark);
+
+	transition-timing-function: ease-out;
+	transition:
+		width 247ms,
+		height 247ms,
+		background-color 100ms,
+		color 100ms;
+}
+.close:hover {
+	width: 42px;
+	height: 42px;
+	font-size: 1.3em;
+	background-color: var(--clr-darkest);
+}
+.center {
+	top: 50%;
+	left: 50%;
+}
+.topcenter {
+	top: 0;
+	left: 50%;
+}
+.popup .row {
+	width: 40vw;
+	flex-direction: column;
+	flex-wrap: wrap;
 }
 
 /* ----- TELA DE LOGIN ----- */
@@ -77,6 +195,63 @@
 
 /* ----- TELA DASHBOARD ----- */
 
+.tbd {
+	align: center;
+	float: center;
+}
+.tb {
+	/* display: flex; */
+	max-width: 0.9em;
+	font-size: 1em;
+	color: var(--clr-dark);
+	background-color: var(--clr-main);
+	border-radius: 12px;
+	padding: 2px 8px;
+	margin: 0px 0px 0px 12px;
+
+	transition-timing-function: ease-out;
+	transition:
+		background-color 84ms,
+		color 84ms;
+}
+.tb:hover {
+	color: var(--clr-seco);
+	background-color: var(--clr-darkest);
+}
+
+.tbBig {
+	color: var(--clr-main);
+	width: calc(100% - 1px);
+	padding: 2px 8px;
+	margin: 0px;
+	background-color: rgba(0,0,0, 0);
+
+	transition-timing-function: ease-out;
+	transition:
+		font-size 247ms,
+		background-color 100ms,
+		color 100ms;
+}
+.tbBig:hover {
+	color: var(--clr-white);
+	font-size: 1.3em;
+	background-color: var(--clr-main);
+}
+
+.weakInput {
+	display: flex;
+	flex-grow: 1;
+	width: auto;
+	padding: 8px 12px;
+	margin: 0;
+	box-sizing: border-box;
+	border: 0;
+	border-radius: 25px;
+	background-color: var(--clr-dark);
+	color: var(--clr-white);
+	font-size: 1.1em;
+}
+
 #main-side {
 	float: left;
 	background-color: var(--clr-darker);
@@ -89,7 +264,6 @@
 	overflow-y: auto;
 	float: left;
 	padding: 25px;
-	background-color: var(--clr-dark);
 	width: 75%-var(padding);
 	height: 1080-var(padding);
 	margin-left: auto;
@@ -120,23 +294,23 @@
 	border-radius: 0px;
 	width: 100%;
 	margin-left: 0%;
-	background-color: var(--clr-dark);
-	color: var(--clr-main);
+	background-color: var(--clr-main);
+	color: var(--clr-dark);
 }
 
 .marca-pag:hover {
 	width: 90%;
 	margin-left: 10%;
-	background-color: var(--clr-main);
-	color: var(--clr-darker);
+	background-color: var(--clr-dark);
+	color: var(--clr-seco);
 }
 
 .current:hover, .marca-pag[data-sel=true]:hover {
 	border-radius: 0px;
 	width: 100%;
 	margin-left: 0%;
-	background-color: var(--clr-dark);
-	color: var(--clr-seco);
+	background-color: var(--clr-main);
+	color: var(--clr-darkest);
 }
 
 #main-primary > div {
@@ -168,7 +342,12 @@
 	margin: 12px;
 	padding: 13px;
 }
+.generico {
+	max-width: 33%;
+	flex-grow: 1;
+}
 .fator > h3 {
+	display: block;
 	font-size: 1.1em;
 	color: var(--clr-seco);
 	margin: 0px;
@@ -198,4 +377,9 @@
 	padding: 8px;
 	margin-bottom: 3px;
 	height: 1.2em;
+}
+
+.item-barra-nome {}
+.item-barra-estoq {
+	color: var(--clr-seco);
 }

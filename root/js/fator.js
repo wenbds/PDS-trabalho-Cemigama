@@ -32,6 +32,7 @@ export class generico {
 			console.warn('Nenhum element encontrado para ',this,': ',element,'');
 			return this;
 		}
+
 		for (const child of element.children) {
 			if (child.tagName === 'H3') {
 				this.elemLabel = child;
@@ -66,33 +67,71 @@ export class numerico extends generico {
 	conteudo = function () { return -1 } 
 	temSinalzinho = false;
 	editavel = false;
+	fodder = [];
 	constructor (modo,i, label, temSinalzinho, conteudo, editavel) {
 		super(modo,i, label, 0);
 		this.temSinalzinho = temSinalzinho;
-		this.editavel = editavel;
+		this.editavel = editavel; // Trocar p/ número editável
+		if (this.editavel) {
+			const novo = document.createElement('input');
+			novo.type = 'number';
+			novo.classList.add('weakInput');
+			novo.min = 0;
+			novo.autocomplete = false;
+			novo.id = this.fator.strval;
+			novo.name = this.fator.strval;
+			this.element.appendChild(novo);
+			if (this.elemValue) { this.elemValue.remove(); }
+			this.elemValue = novo;
+		}
 
 		this.conteudo = conteudo;
+		if (!this.element) { return; }
+		this.element.classList.add('generico');
 	}
 
-	render () {
+	async render () {
 		this.labelize();
 		if (this.elemValue === undefined) {
 			console.warn('elemvalue indefinido para', this);
 			return; }
+
+		var propMuda = 'innerHTML'
+		if (this.editavel) {
+			propMuda = 'value';
+			this.clear();
+			this.toqsFinais();
+		}
+
 		if (this.conteudo === undefined) {
-			this.elemValue.innerHTML = '( ˶°ㅁ°) !!';
+			this.elemValue [propMuda] = '( ˶°ㅁ°) !!';
 			console.warn('Conteúdo indefinido para valor num.', this);
 			return; }
-		const conteudo = this.conteudo();
+		const conteudo = await this.conteudo();
 		if (conteudo === undefined) {
-			this.elemValue.innerHTML = '•́︵•̀';
+			this.elemValue [propMuda] = '•́︵•̀';
 			console.warn('Conteúdo retornou nada para valor num.', this, '(',conteudo,')');
 			return; }
 
 		if (!this.temSinalzinho) {
-			this.elemValue.innerHTML = conteudo.toString();
+			this.elemValue [propMuda] = conteudo;
 			return;
 		}
-		this.elemValue.innerHTML = Number.parseFloat(conteudo).toFixed(2);
+		this.elemValue [propMuda] = Number.parseFloat(conteudo).toFixed(2);
+	}
+
+	toqsFinais () {
+		const buttonEdi = document.createElement('a');
+		buttonEdi.classList.add('tb');
+		buttonEdi.appendChild(document.createTextNode('⬆'));
+		this.element.appendChild(buttonEdi);
+		this.fodder.push(buttonEdi);
+	}
+
+	clear () {
+		for (const i in this.fodder) {
+			this.fodder[i].remove();
+			delete this.fodder[i];
+		}
 	}
 }

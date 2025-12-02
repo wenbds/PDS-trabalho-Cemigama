@@ -24,6 +24,17 @@
 
 		<!-- conteúdo -->
 		<div class="container">
+			<script type='module'>
+				// Reação do código com o site
+				import popup, * as handler from './js/popup.js';
+
+				const params = await handler.getParams();
+				if (params.error) {
+					const errPopup = new popup(handler.TIPO_ERRO, 'Erro', handler.ERRO_MENSAGENS[params.error]);
+					console.log(errPopup);
+					errPopup.pop(document.querySelector('body'));
+				}
+			</script>
 			<div class="bg" style="background-image: url('asset/image/gradiente.jpg');
 				background-size: cover;">
 				<div id="login-side" class="container-fluid">

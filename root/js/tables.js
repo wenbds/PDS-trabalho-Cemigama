@@ -1,4 +1,6 @@
 import { default as fator, generico } from './fator.js';
+import { default as editor } from './editor.js';
+
 export default class table extends generico {
 	/*
 	 Variável `trackers` se refere à lista de propriedades
@@ -15,7 +17,12 @@ export default class table extends generico {
 	 ]);
 	 */
 	trackers = [];
-	bd = [];
+	bd = 0;
+	data = [];
+	rows = [];
+	cols = [];
+	fodder = [];
+	qrow = 0; qcol = 0;
 	thead; tbody; tfoot;
 	constructor (modo,i, label, bd, trackers) {
 		super(modo,i, label, 1);
@@ -57,20 +64,125 @@ export default class table extends generico {
 		this.tfoot.appendChild(tfootRow);
 		const total = document.createElement('th');
 		total.appendChild(document.createTextNode('Total'));
-		var colspan = 0;
 		total.scope = 'row';
+		var colspan = 0;
+
 		tfootRow.appendChild(total);
 		for (const i in this.trackers) {
 			tracker = this.trackers[i];
 			if (!tracker.total) { colspan += 1; continue; }
 			const td = document.createElement('td');
+			td.id = this.fator.strval+'t'+i.toString();
 			td.appendChild(document.createTextNode('X'));
 			tfootRow.appendChild(td);
+
+			this.cols[i] = td;
+		}
+		total.colSpan = colspan;
+	}
+
+	row (i,fonte) {
+		const tr = document.createElement('tr');
+		this.tbody.appendChild(tr);
+		tr.id = this.fator.strval+i.toString(); // então vai parecer como ex.: s2-0n1
+		var elem = 'th'
+		for (const j in this.trackers) {
+			this.qcol += 1;
+			const html = document.createElement(elem);
+			if (elem !== 'td') { elem = 'td'; } // Faz que o primeiro item seja th.
+			html.appendChild(document.createTextNode(this.trackers[j].get(fonte)));
+			tr.appendChild(html);
+			if (this.trackers[j].increment) {
+				const buttonInc = document.createElement('a');
+				buttonInc.classList.add('tb');
+				buttonInc.appendChild(document.createTextNode('⬆'));
+				html.appendChild(buttonInc);
+				const buttonDec = document.createElement('a');
+				buttonDec.classList.add('tb');
+				buttonDec.appendChild(document.createTextNode('⬇'));
+				html.appendChild(buttonDec);
+			}
+		}
+		return tr;
+	}
+
+	clear () {
+		for (const i in this.rows) {
+			this.rows[i].remove();
+			delete this.rows[i];
+		}
+		this.qcol = 0;
+		this.qrow = 0;
+		this.tbody.innerHTML = '';
+		for (const i in this.fodder) {
+			this.fodder[i].remove();
+			delete this.fodder[i];
 		}
 	}
 
-	render () {
+	fill () {
+		for (const i in this.data) {
+			this.qrow += 1;
+			this.rows[i] = this.row(i, this.data[i]);
+		}
+	}
+
+	toqsFinais () {
+		// Adicionar item na tabela
+		const adicionRow = document.createElement('tr');
+		this.tbody.appendChild(adicionRow);
+		const adicionBg  = document.createElement('th');
+		adicionBg.scope = 'row';
+		adicionBg.colSpan = this.qcol;
+		adicionRow.appendChild(adicionBg);
+		const adicionBtn = document.createElement('button')
+		adicionBtn.onclick = event => (editor.openPronto('adicionar')); // TODO: Isso só se aplica a tabela de "materiais". Tem o de vendas e clientes. Como que o código vai entender qual usar?
+		// Ideia: usar argumentos que especificam qual editor deve abrir?
+		adicionBtn.classList.add('tbBig');
+		adicionBtn.appendChild(document.createTextNode('＋'));
+		adicionBg.appendChild(adicionBtn);
+		
+		// Remover/Editar itens na tabela
+		const rmedHead = document.createElement('th');
+		rmedHead.scope = "col";
+		this.thead.children[0].appendChild(rmedHead);
+		this.fodder.push(rmedHead);
+		const rmedFoot = document.createElement('td');
+		this.tfoot.children[0].appendChild(rmedFoot);
+		this.fodder.push(rmedFoot);
+		for (const i in this.rows) {
+			const rmedTd = document.createElement('td');
+			rmedTd.classList.add('tbd');
+			this.rows[i].appendChild(rmedTd);
+			const rmedButtonRmv = document.createElement('a');
+			rmedButtonRmv.classList.add('tb');
+			rmedButtonRmv.appendChild(document.createTextNode('ー'));
+			rmedTd.appendChild(rmedButtonRmv);
+			const rmedButtonEdi = document.createElement('a');
+			rmedButtonEdi.classList.add('tb');
+			rmedButtonEdi.appendChild(document.createTextNode('＠'));
+			rmedTd.appendChild(rmedButtonEdi);
+		}
+	}
+
+	totalizar () {
+		for (const i in this.cols) {
+			var total = 0;
+			for (const j in this.rows) {
+				total += Number.parseFloat(this.rows[j].children[i].textContent);
+			}
+			this.cols[i].textContent = '';
+			this.cols[i].appendChild(document.createTextNode(!this.trackers[i].totalget ? total : this.trackers[i].totalget(total)));
+		}
+	}
+
+	render (ctx) {
 		this.labelize();
+		this.data = ctx.bd[this.bd]
+		this.clear();
+		this.fill();
+		this.totalizar();
+		this.toqsFinais();
 	}
 }
 
@@ -85,21 +197,23 @@ export class itemBarra {
 		this.ligado = item;
 
 		this.elemento = document.createElement('div');
-		this.elemento.class = 'item-barra';
+		this.elemento.classList.add('item-barra');
 
-		this.elemNome = document.createElement('div');
-		this.elemNome.class = 'item-barra-nome';
-		// this.elemNome.textContent = this.ligado.nome;
 		this.elemEstoq = document.createElement('span');
-		this.elemEstoq.class = 'item-barra-estoq';
+		this.elemEstoq.classList.add('item-barra-estoq');
+		this.elemento.appendChild(this.elemEstoq);
 		// this.elemEstoq.textContent = this.ligado.estoq;
+		this.elemNome = document.createElement('span');
+		this.elemNome.classList.add('item-barra-nome');
+		this.elemento.appendChild(this.elemNome);
+		// this.elemNome.textContent = this.ligado.nome;
 
 		this.render();
 	}
 
 	render () {
+		this.elemEstoq.textContent = this.ligado.estoq.toString()+' × ';
 		this.elemNome.textContent = this.ligado.nome;
-		this.elemEstoq.textContent = this.ligado.estoq;
 	}
 
 	atualizar (elemEstoq, elemNome) {
@@ -117,7 +231,8 @@ export class itemBarra {
 }
 
 export class combarra extends generico {
-	bd = [];
+	bd = 0;
+	data = [];
 	itens = [];
 
 	constructor (modo,i, label, bd) {
@@ -126,13 +241,6 @@ export class combarra extends generico {
 
 		// Limpar a tabela (método inseguro?)
 		this.elemValue.innerHTML = '';
-
-		var item;
-		for (const i in this.bd) {
-			item = this.bd[i];
-			this.itens[i] = new itemBarra(this.bd[i]);
-			this.elemValue.appendChild(itens[i].elemento);
-		}
 	}
 
 	atualizar () {
@@ -140,8 +248,28 @@ export class combarra extends generico {
 			this.itens[i].atualizar();
 		}
 	}
+	
+	clear () {
+		for (const i in this.itens) {
+			this.itens[i].morrer();
+			delete this.itens[i];
+		}
+		this.elemValue.innerHTML = '';
+	}
 
-	render () {
+	fill () {
+		var item;
+		for (const i in this.data) {
+			item = this.data[i];
+			this.itens[i] = new itemBarra(item);
+			this.elemValue.appendChild(this.itens[i].elemento);
+		}
+	}
+
+	render (ctx) {
 		this.labelize();
+		this.data = ctx.bd[this.bd]
+		this.clear();
+		this.fill();
 	}
 }

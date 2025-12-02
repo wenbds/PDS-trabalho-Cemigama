@@ -15,6 +15,13 @@ switch ($resposta) {
 	$resposta = $client->util->cliente;
 	break;
 
+	case 3:
+	$resposta = $pedido->isso ?? null;
+	$resposta = $client->util->variaveis->findOne(['_id'=>$resposta]);
+	echo json_encode($resposta);
+	die();
+	break;
+
 	default:
 	$resposta = 'inválido';
 }
