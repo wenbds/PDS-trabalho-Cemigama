@@ -8,7 +8,10 @@ export async function getParams () {
 	return response;
 }
 
-const bufferSave = {};
+const bufferSave = [{},{},{},{},{},{},{},{}];
+export function getBuffer (slot) {
+	return bufferSave [slot];
+}
 
 export const TIPO_NORMAL = 0;
 export const TIPO_AVISO  = 1;
@@ -28,7 +31,7 @@ export default class popup {
 	partes = [];
 	partesData = [];
 	modal = false;
-	modalSave = false;
+	modalSave = -1;
 
 	constructor (tipo, title, msg, partes) {
 		this.tipo  = tipo;
@@ -37,7 +40,7 @@ export default class popup {
 		this.partesData = partes;
 
 		const element = document.createElement('div');
-		element.classList.add('popup', 'topcenter', TIPO_CLASS[this.tipo]);
+		element.classList.add('popup', 'topcenter', TIPO_CLASS[this.tipo]); // TODO mudar Align Style?
 		this.element.base = element;
 		
 		const baseRow = document.createElement('div');
@@ -65,12 +68,18 @@ export default class popup {
 		element.appendChild(elemClose);
 		this.element.close = elemClose;
 		elemClose.onclick = () => { this.close(); };
+
+		const elemRow = document.createElement('div');
+		elemRow.classList.add('list-box');
+		element.appendChild(elemRow);
+		this.element.rows = elemRow;
 	}
 
 	async pop (onde) {
 		onde.appendChild(this.element.base);
 		if (this.modal) {
-			this.element.base.ariaModal = true
+			this.element.base.setAttribute('ariaModal',true);
+			this.element.base.setAttribute('role','dialog');
 			const modalBg = document.querySelector('.modal-bg');
 			modalBg.classList.add('show');
 		}
@@ -79,27 +88,35 @@ export default class popup {
 			const dataSet = this.partesData[i];
 			const row = document.createElement('div');
 			row.classList.add('row');
-			this.element.base.appendChild(row);
+			this.element.rows.appendChild(row);
 			for (const j in dataSet) {
 				const data = dataSet[j];
-				const parte = new popupPart (data[0],data[1],data[2],data[3],data[4]);
-				parte.add(row);
+				const parte = new popupPart (data[0],data[1],data[2],data[3],data[4],this.modalSave);
+				parte.add(this, row);
+				this.partes.push(parte);
 			}
+		}
+	}
+
+	save (slot) {
+		for (const i in this.partes) {
+			const parte = this.partes[i];
+			parte.save(slot);
+			parte.remove();
+			delete this.partes [i], parte;
 		}
 	}
 
 	close () {
 		if (this.modal) {
-			this.element.base.ariaModal = false 
+			this.element.base.removeAttribute('ariaModal');
+			this.element.base.removeAttribute('role');
 			const modalBg = document.querySelector('.modal-bg');
 			modalBg.classList.remove('show');
 		}
-		for (const i in this.partes) {
-			const parte = this.partes[i];
-			bufferSave [parte] = parte.value;
-			parte.remove();
-			delete this.partes [i], parte;
-		}
+
+		if (this.modalSave >= 0) this.save(this.modalSave);
+
 		this.element.base.remove();
 		delete this.element;
 	}
@@ -116,38 +133,90 @@ export const PART_DROP   = 7;
 export const PART_LISTA  = 8;
 export const PART_TIME   = 9;
 
+function parseVirgula(str) {
+	return Number.parseFloat(str.toString().replaceAll('.','').replace(',', '.'));
+}
+const dinheiro = new Intl.NumberFormat('pt-BR',{style:'decimal',currencyDisplay:'code',maximumFractionDigits:2,minimumFractionDigits:2});
 export const PART_DATA = [ ];
-	PART_DATA [PART_TITULO] = {elem:'h2'};
-	PART_DATA [PART_TEXTO]  = {elem:'p'};
-	PART_DATA [PART_BOTAO]  = {elem:'button'};
-	PART_DATA [PART_DIVISN] = {elem:'hr'};
+	PART_DATA [PART_TITULO] = {elem:'h2',noName:true,nameInside:true};
+	PART_DATA [PART_TEXTO]  = {elem:'p',noName:true,nameInside:true};
+	PART_DATA [PART_BOTAO]  = {elem:'button',noName:true,nameInside:true};
+	PART_DATA [PART_DIVISN] = {elem:'hr',noName:true,elemIsBase:true};
 	PART_DATA [PART_INPUT]  = {elem:'input'};
-	PART_DATA [PART_NUMERO] = {elem:'input'};
-	PART_DATA [PART_MONEY]  = {elem:'input'};
+	PART_DATA [PART_NUMERO] = {elem:'input',reader: self => parseVirgula(self) };
+	PART_DATA [PART_MONEY]  = {elem:'input',reader: self => parseVirgula(self), format: self => dinheiro.format(parseVirgula(self))};
 	PART_DATA [PART_DROP]   = {elem:'input'};
 	PART_DATA [PART_LISTA]  = {elem:'div'};
 	PART_DATA [PART_TIME]   = {elem:'input'};
 
 export class popupPart {
 	tipo = PART_TEXTO;
+	popup;
 	nome = 'Alguma coisa';
 	conteudo;
-	value = 'é alguma coisa';
+	value;
 	element = {};
 
-	constructor (tipo, nome, display, value, conteudo) {
+	constructor (tipo, nome, display, value, conteudo, saveSlot) {
 		this.tipo = tipo;
+		const part = PART_DATA[this.tipo];
+		if (!part) {
+			console.warn(`No type for ${this.tipo}: ${part}`);
+			return;
+		}
 		this.nome = nome;
-		this.value = value;
+		this.display = display;
+
+		if (bufferSave [saveSlot] !== undefined && bufferSave [saveSlot] [nome] !== undefined) {
+			this.value = bufferSave [saveSlot] [nome];
+			delete bufferSave [saveSlot] [nome];
+		} else {this.value = (typeof value === 'function' && this.tipo !== PART_BOTAO) ? value() : value;}
+
 		this.conteudo = conteudo;
 
-		const teste = document.createElement(PART_DATA[this.tipo].elem);
-		teste.appendChild(document.createTextNode(this.nome));
-		this.element.base = teste;
+		const elemBase = document.createElement(!part.elemIsBase ? 'span' : part.elem);
+		elemBase.id = 'popup-'+this.nome;
+		this.element.base = elemBase;
+
+		const elemNome = document.createElement('span');
+		elemNome.id = 'popup-'+this.nome+'n';
+		if (!part.noName) elemNome.appendChild(document.createTextNode(this.display));
+		this.element.nome = elemNome;
+		elemBase.appendChild(elemNome);
+
+		const elemValue = document.createElement(!part.elemIsBase ? part.elem : 'span');
+		elemValue.id = 'popup-'+this.nome+'v';
+		if (part.nameInside) elemValue.appendChild(document.createTextNode(this.display));
+		if (part.valueInside) elemValue.appendChild(document.createTextNode(this.value));
+		elemValue.value = this.value;
+		this.element.value = elemValue;
+		elemBase.appendChild(elemValue);
+
+
+		if (this.tipo === PART_BOTAO) { 
+			elemValue.addEventListener('click', () => {
+				if (typeof this.value === 'function') { this.value(this); } });
+		} else {
+			if (part.format) elemValue.value = part.format(this.value);
+			elemValue.addEventListener('blur', () => {
+				if (part.format) elemValue.value = part.format(elemValue.value);
+				this.value = !part.reader ? elemValue.value : part.reader(elemValue.value);
+			});
+		}
 	}
 
-	add (onde) {
+	add (popup, onde) {
+		this.popup = popup;
 		onde.appendChild(this.element.base);
+	}
+
+	save (slot) {
+		if (this.tipo === PART_BOTAO
+			|| this.tipo === PART_DIVISN
+			|| !bufferSave [slot])
+		{return;}
+
+		bufferSave [slot] [this.nome] = this.value;
 	}
 
 	remove () {

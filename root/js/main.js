@@ -9,13 +9,17 @@ e esconde ou mostra elementos respectivamente ao botão
 pressionado.
 
 TODO@FEAT: Fazer tabelas ser alteráveis.
-TODO@FEAT: Pop-ups e estilos de gerenciamento de tabelas (ex.: produtos).
 TODO@FEAT: Funcionalidade de gráficos.
+
+FIXME@FEAT: Não é possível colocar nos pop-ups com dinheiro com mais
+		de 3 dígitos. Por quê?
 
  */
 import { default as fator, generico, numerico } from './fator.js';
 import { default as table, combarra } from './tables.js';
 import { default as grafico } from './grafico.js';
+
+import { default as editor } from './editor.js';
 
 // Modo do dashboard
 const modos = {
@@ -147,7 +151,8 @@ function bdFunc (val, arg) {
 	}
 }
 
-function formatDinheiro (val) { return Number.parseFloat(val).toFixed(2); }
+const dinheiro = new Intl.NumberFormat('pt-BR',{style:'decimal',currencyDisplay:'code',maximumFractionDigits:2,minimumFractionDigits:2});
+function formatDinheiro (val) { return dinheiro.format(Number.parseFloat(val)); }
 
 const carregaveis = [ // Elementos de dados ("s0-0", "s0-1", etc.)
 	[], [], [],
@@ -195,7 +200,7 @@ carregaveis [modos.alterar][0] = new table(2,0,'Produtos Cadastrados', 0, [
 		{nome:'Produto',total:false,get: x => x.nome},
 		{nome:'Distribuidora',total:false,get: x => x.distribuidora},
 		{nome:'Quantidade',total:true,increment:true,get: x => x.estoq },
-		{nome:'Custo Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.custoUni )},
+		{nome:'Custo Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.custoUni)},
 		{nome:'Preço Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.precoUni)},
 		{nome:'Lucro (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.precoUni * x.estoq - x.custoUni * x.estoq)}
 	 ]);
@@ -252,3 +257,11 @@ async function atualizarDados (bin) {
 await atualizarDados(ATLZR_TODOS);
 
 await updateModo(current); // inicializar com o modo que já existe
+
+// Execução de update
+setInterval(await async function() {
+	if (!editor.shouldUpdate) { return; }
+	await atualizarDados(ATLZR_TODOS);
+	await renderizarPag();
+	editor.updated();
+}, 500)

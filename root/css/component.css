@@ -75,7 +75,7 @@
 
 @keyframes popup {
 	from { margin-top: 9vh; }
-	to { margin-top: 15vh; }
+	to { margin-top: 4rem auto; }
 }
 
 .normal {
@@ -94,6 +94,7 @@
 .popup.warning h2 { color: #ff6; }
 .popup {
 	max-width: 80vw;
+	max-height: 85vh;
 	flex-direction: column;
 	display: flex;
 	font-size: 1.2em;
@@ -102,7 +103,7 @@
 	border-radius: 20px;
 	border-style: solid;
 	position: fixed;
-	margin: 15vh 0;
+	margin: 4rem auto;
 	z-index: 64;
 	transform: translate(-50%, 0%);
 
@@ -159,8 +160,10 @@
 	background-color: var(--clr-darkest);
 }
 .center {
-	top: 50%;
-	left: 50%;
+	left: 0;
+	right: 0;
+	top: 0;
+	left: 0;
 }
 .topcenter {
 	top: 0;
@@ -170,6 +173,14 @@
 	width: 40vw;
 	flex-direction: column;
 	flex-wrap: wrap;
+}
+
+.list-box {
+	padding: 0 20px;
+	overflow-y: scroll;
+}
+.list-box .row hr {
+	background-color: var(--clr-darker);
 }
 
 /* ----- TELA DE LOGIN ----- */

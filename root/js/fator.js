@@ -63,6 +63,9 @@ export class generico {
 	}
 }
 
+const dinheiro = new Intl.NumberFormat('pt-BR',{style:'decimal',currencyDisplay:'code',maximumFractionDigits:2,minimumFractionDigits:2});
+function formatDinheiro (val) { return dinheiro.format(Number.parseFloat(val)); }
+
 export class numerico extends generico {
 	conteudo = function () { return -1 } 
 	temSinalzinho = false;
@@ -117,7 +120,7 @@ export class numerico extends generico {
 			this.elemValue [propMuda] = conteudo;
 			return;
 		}
-		this.elemValue [propMuda] = Number.parseFloat(conteudo).toFixed(2);
+		this.elemValue [propMuda] = formatDinheiro(conteudo);
 	}
 
 	toqsFinais () {

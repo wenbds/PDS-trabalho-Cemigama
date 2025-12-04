@@ -127,6 +127,10 @@ export default class table extends generico {
 		}
 	}
 
+	getSelected () {
+		editor.select(0,this);
+	}
+
 	toqsFinais () {
 		// Adicionar item na tabela
 		const adicionRow = document.createElement('tr');
@@ -145,22 +149,32 @@ export default class table extends generico {
 		// Remover/Editar itens na tabela
 		const rmedHead = document.createElement('th');
 		rmedHead.scope = "col";
-		this.thead.children[0].appendChild(rmedHead);
+		this.thead.children[0].insertBefore(rmedHead,this.thead.children[0].children[0]);
 		this.fodder.push(rmedHead);
 		const rmedFoot = document.createElement('td');
-		this.tfoot.children[0].appendChild(rmedFoot);
+		this.tfoot.children[0].insertBefore(rmedFoot,this.tfoot.children[0].children[0]);
 		this.fodder.push(rmedFoot);
 		for (const i in this.rows) {
 			const rmedTd = document.createElement('td');
 			rmedTd.classList.add('tbd');
-			this.rows[i].appendChild(rmedTd);
+			this.rows[i].insertBefore(rmedTd,this.rows[i].children[0]);
 			const rmedButtonRmv = document.createElement('a');
 			rmedButtonRmv.classList.add('tb');
 			rmedButtonRmv.appendChild(document.createTextNode('ー'));
+			rmedButtonRmv.onclick = event => {
+				this.getSelected();
+				editor.select(1, this.data[i]);
+				editor.openPronto('remover');
+			};
 			rmedTd.appendChild(rmedButtonRmv);
 			const rmedButtonEdi = document.createElement('a');
 			rmedButtonEdi.classList.add('tb');
 			rmedButtonEdi.appendChild(document.createTextNode('＠'));
+			rmedButtonEdi.onclick = event => {
+				this.getSelected();
+				editor.select(1, this.data[i]);
+				editor.openPronto('alterar');
+			};
 			rmedTd.appendChild(rmedButtonEdi);
 		}
 	}
