@@ -87,19 +87,28 @@ export default class table extends generico {
 		tr.id = this.fator.strval+i.toString(); // então vai parecer como ex.: s2-0n1
 		var elem = 'th'
 		for (const j in this.trackers) {
+			const tracker = this.trackers[j];
 			this.qcol += 1;
 			const html = document.createElement(elem);
 			if (elem !== 'td') { elem = 'td'; } // Faz que o primeiro item seja th.
-			html.appendChild(document.createTextNode(this.trackers[j].get(fonte)));
+			html.appendChild(document.createTextNode(tracker.get(fonte)));
 			tr.appendChild(html);
-			if (this.trackers[j].increment) {
+			if (tracker.increment) {
 				const buttonInc = document.createElement('a');
 				buttonInc.classList.add('tb');
 				buttonInc.appendChild(document.createTextNode('⬆'));
+				buttonInc.onclick = event => {
+					this.getSelected();
+					editor.select(1, this.data[i]);
+				}
 				html.appendChild(buttonInc);
 				const buttonDec = document.createElement('a');
 				buttonDec.classList.add('tb');
 				buttonDec.appendChild(document.createTextNode('⬇'));
+				buttonDec.onclick = event => {
+					this.getSelected();
+					editor.select(1, this.data[i]);
+				}
 				html.appendChild(buttonDec);
 			}
 		}
@@ -127,10 +136,6 @@ export default class table extends generico {
 		}
 	}
 
-	getSelected () {
-		editor.select(0,this);
-	}
-
 	toqsFinais () {
 		// Adicionar item na tabela
 		const adicionRow = document.createElement('tr');
@@ -140,8 +145,7 @@ export default class table extends generico {
 		adicionBg.colSpan = this.qcol;
 		adicionRow.appendChild(adicionBg);
 		const adicionBtn = document.createElement('button')
-		adicionBtn.onclick = event => (editor.openPronto('adicionar')); // TODO: Isso só se aplica a tabela de "materiais". Tem o de vendas e clientes. Como que o código vai entender qual usar?
-		// Ideia: usar argumentos que especificam qual editor deve abrir?
+		adicionBtn.onclick = event => (editor.openPronto(`adicionar${this.bd}`));
 		adicionBtn.classList.add('tbBig');
 		adicionBtn.appendChild(document.createTextNode('＋'));
 		adicionBg.appendChild(adicionBtn);
@@ -173,7 +177,7 @@ export default class table extends generico {
 			rmedButtonEdi.onclick = event => {
 				this.getSelected();
 				editor.select(1, this.data[i]);
-				editor.openPronto('alterar');
+				editor.openPronto(`alterar${this.bd}`);
 			};
 			rmedTd.appendChild(rmedButtonEdi);
 		}

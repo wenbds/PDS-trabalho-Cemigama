@@ -49,6 +49,18 @@ const PSCHEMA_MATERIAL = [
 	[[handler.PART_NUMERO,'estoq','Estoque atual',0]],
 	[[handler.PART_NUMERO,'estoqMinimo','Estoque mínimo',0]]
 ]
+const PSCHEMA_VENDA = [
+	[[handler.PART_DROP,'cliente','Cliente']],
+	[[handler.PART_DROP,'produto','Material vendido']],
+	[[handler.PART_MONEY,'valor','Valor (R$)',0]],
+	[[handler.PART_NUMERO,'quant','Quantidade',0]],
+	[[handler.PART_TIME,'data','Data','HOJE']]
+]
+const PSCHEMA_CLIENTE = [
+	[[handler.PART_INPUT,'nome','Nome','']],
+	[[handler.PART_INPUT,'endereco','Endereço','']],
+	[[handler.PART_CPFCNPJ,'cpf-cnpj','CPF/CNPJ','']]
+]
 
 function factoryAdicionar (mode, nome) {
 	return async function(self) {
@@ -66,7 +78,7 @@ function factoryAdicionar (mode, nome) {
 function factoryAdicionarSchema (mode, nome, artigo, schema) {
 	const novo = [
 		`Cadastrar ${nome}`,
-		`Preencha todos os campos descrevendo ${artigo} ${nome} a ser cadastrado.`,
+		`Preencha todos os campos descrevendo ${artigo} ${nome} a ser cadastrad${artigo}.`,
 		0,
 		[]
 	];
@@ -105,7 +117,7 @@ function factoryAlterarSchema (mode, nome, artigo, schema) {
 	const novo = [
 		`Alterar ${nome}`,
 		() => `Preencha todos os campos descrevendo mudanças n${artigo} ${nome} "${selection[1].nome}".`,
-		null,
+		1,
 		[]
 	];
 
@@ -134,7 +146,7 @@ function factoryAlterarSchema (mode, nome, artigo, schema) {
 const jáPronto = {
 	remover: [
 		"Remover item",
-		() => `Você tem certeza que quer remover o item "${selection[1].nome}" da tabela?\nNão é possível desfazer esta decisão.`,
+		() => `Você tem certeza que quer remover o item "${selection[1].nome}" da tabela?\nNão será possível desfazer esta decisão.`,
 		null,
 		[
 			[[handler.PART_BOTAO,'btSim','Sim', async function(self) {
@@ -143,7 +155,6 @@ const jáPronto = {
 				pedido.tipo = selectMode; 
 				pedido.objeto = selection[1];
 				const response = await edit();
-				var responsePop
 				if (response && response.ok) { popResponse(handler.TIPO_NORMAL, "Sucesso", "Item \""+selection[1].nome+"\" removido com êxito");
 				} else { popResponse(handler.TIPO_ERRO, "Erro", "Erro tentando remover item. Resposta: "+response.json()); }
 			}],[handler.PART_BOTAO,'btNão','Não', async function(self) {
@@ -151,8 +162,12 @@ const jáPronto = {
 			}]]
 		]
 	],
-	adicionar: await factoryAdicionarSchema(0, 'material', 'o', PSCHEMA_MATERIAL),
-	alterar: await factoryAlterarSchema(0, 'material', 'o', PSCHEMA_MATERIAL)
+	adicionar0: await factoryAdicionarSchema(0, 'material', 'o', PSCHEMA_MATERIAL),
+	adicionar1: await factoryAdicionarSchema(0, 'venda', 'a', PSCHEMA_VENDA),
+	adicionar2: await factoryAdicionarSchema(0, 'cliente', 'o(a)', PSCHEMA_CLIENTE),
+	alterar0: await factoryAlterarSchema(0, 'material', 'o', PSCHEMA_MATERIAL),
+	alterar1: await factoryAlterarSchema(0, 'venda', 'a', PSCHEMA_VENDA),
+	alterar2: await factoryAlterarSchema(0, 'cliente', 'o(a)', PSCHEMA_CLIENTE)
 }
 
 class editAPI {
@@ -187,13 +202,27 @@ class editAPI {
 			lista[3], lista[2]);
 	}
 
+	// Aplica as edições
 	edit () {
 		return edit();
 	}
 
+	// Editar uma variável
+	async editVar (varName) {
+		pedido.fazer = 'wv';
+		pedido.var = varName;
+		pedido.val = selection[1];
+		const response = await edit();
+		if (response && response.ok) { popResponse(handler.TIPO_NORMAL, "Sucesso", `Variável foi alterada.`);
+		} else { popResponse(handler.TIPO_ERRO, "Erro", `Erro tentando alterar variável. Resposta: `+response.json()); }
+	}
+
+	// Chama a atualização do main/index.php
 	updating() {
 		this.shouldUpdate = true;
 	}
+
+	// Resposta do main/index.php
 	updated() {
 		this.shouldUpdate = false;
 	}

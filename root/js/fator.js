@@ -1,5 +1,5 @@
-// 
 // OBJETO BASE DE FATOR
+import { default as editor } from './editor.js';
 
 export default class fator {
 	tipo = 0;
@@ -50,6 +50,10 @@ export class generico {
 			return;
 		}
 		this.elemLabel.innerHTML = this.fator.label;
+	}
+
+	getSelected () {
+		editor.select(0,this);
 	}
 
 	render () { this.labelize(); }
@@ -127,6 +131,11 @@ export class numerico extends generico {
 		const buttonEdi = document.createElement('a');
 		buttonEdi.classList.add('tb');
 		buttonEdi.appendChild(document.createTextNode('⬆'));
+		buttonEdi.onclick = event => {
+			this.getSelected();
+			editor.select(1, Number.parseFloat(this.elemValue.value));
+			editor.editVar('estoqDesejavel');
+		};
 		this.element.appendChild(buttonEdi);
 		this.fodder.push(buttonEdi);
 	}

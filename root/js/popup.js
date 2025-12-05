@@ -132,6 +132,7 @@ export const PART_MONEY  = 6;
 export const PART_DROP   = 7;
 export const PART_LISTA  = 8;
 export const PART_TIME   = 9;
+export const PART_CPFCNPJ= 10;
 
 function parseVirgula(str) {
 	return Number.parseFloat(str.toString().replaceAll('.','').replace(',', '.'));
@@ -148,6 +149,7 @@ export const PART_DATA = [ ];
 	PART_DATA [PART_DROP]   = {elem:'input'};
 	PART_DATA [PART_LISTA]  = {elem:'div'};
 	PART_DATA [PART_TIME]   = {elem:'input'};
+	PART_DATA [PART_CPFCNPJ]= {elem:'input'};
 
 export class popupPart {
 	tipo = PART_TEXTO;
@@ -167,7 +169,7 @@ export class popupPart {
 		this.nome = nome;
 		this.display = display;
 
-		if (bufferSave [saveSlot] !== undefined && bufferSave [saveSlot] [nome] !== undefined) {
+		if (typeof value !== 'function' && bufferSave [saveSlot] !== undefined && bufferSave [saveSlot] [nome] !== undefined) {
 			this.value = bufferSave [saveSlot] [nome];
 			delete bufferSave [saveSlot] [nome];
 		} else {this.value = (typeof value === 'function' && this.tipo !== PART_BOTAO) ? value() : value;}

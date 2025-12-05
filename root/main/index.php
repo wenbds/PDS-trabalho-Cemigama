@@ -156,21 +156,21 @@ if (empty($_SESSION["session"])) {
 					
 					<div class="section" data-mode=3 id="main3"> <!-- Saída -->
 						<div class="row">
-							<div class="fator" id="s2-0"> <!-- custo total -->
+							<div class="fator" id="s3-0"> <!-- custo total -->
 								<h3>Custo Total</h3>
 								<span class="fator-reais">R$</span>
-								<span id="s2-0n">0</span>
+								<span id="s3-0n">0</span>
 							</div>
-							<div class="fator" id="s2-1"> <!-- lucro total -->
+							<div class="fator" id="s3-1"> <!-- faturamento -->
 								<h3>Faturamento</h3>
 								<span class="fator-reais">R$</span>
-								<span id="s2-1n">0</span>
+								<span id="s3-1n">0</span>
 							</div>
 						</div>
 						<div class="row">
-							<div class="fator tabela" id="s2-3">
+							<div class="fator tabela" id="s3-2">
 								<h3>Controle de Saída</h3>
-								<table id="s2-3n">
+								<table id="s3-2n">
 									<thead>
 										<tr>
 											<th scope="col">Produto</th>

@@ -40,6 +40,28 @@ if ($resposta == 'w') {
 		print_r($e);
 		exit();
 	}
+} else if ($resposta == 'wv') {
+	$varia = $pedido['var'];
+	if (!$varia) {
+		print('Sem nome da variável. Cancelando o procedimento por segurança.');
+		print_r($document);
+		exit();
+	}
+	$value = $pedido['val'];
+	if (!$value) {
+		print('Sem valor da variável. Cancelando o procedimento por segurança.');
+		print_r($document);
+		exit();
+	}
+	try {$resposta = $a->variaveis->updateOne(
+		['_id' => $varia],
+		['$set' => ['val' => $value]]);}
+	catch (\Exception $e) {
+		print_r($document);
+		print_r($e);
+		exit();
+	}
+
 } else if ($resposta == 'r') {
 	$objeto = $pedido['objeto'] ?? [];
 	if (!$objeto['_id']) { exit(); }

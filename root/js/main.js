@@ -8,11 +8,8 @@ Esse arquivo detecta cliques nos botões de marca página
 e esconde ou mostra elementos respectivamente ao botão
 pressionado.
 
-TODO@FEAT: Fazer tabelas ser alteráveis.
+TODO@FEAT: Pesquisas em tabelas.
 TODO@FEAT: Funcionalidade de gráficos.
-
-FIXME@FEAT: Não é possível colocar nos pop-ups com dinheiro com mais
-		de 3 dígitos. Por quê?
 
  */
 import { default as fator, generico, numerico } from './fator.js';
@@ -120,8 +117,11 @@ async function svar (nomeVar) {
 
 const BDFUNC_TOTAL = 0;
 const BDFUNC_TOTAL_QNT = 1;
+const BDFUNC_ACHAR = 2;
+const OID = '$oid';
+var BDFUNC_COL = 0;
 function bdFunc (val, arg) {
-	const collection = bd[0];
+	const collection = bd[BDFUNC_COL];
 	var index;
 	switch (val) {
 		case BDFUNC_TOTAL:
@@ -146,6 +146,19 @@ function bdFunc (val, arg) {
 				totalQ += Number.parseFloat(index[arg]) * Number.parseFloat(index.estoq);
 			}
 			return totalQ;
+		case BDFUNC_ACHAR:
+			for (const obj in collection) {
+				index = collection[obj]
+				if (!index._id) {
+					console.warn('Objeto inesperado no banco de produtos:',obj,'(não tem',arg,')');
+					continue;
+				}
+
+				if (index._id[OID] === arg) {
+					return index;
+				}
+			}
+			break; 
 		default:
 			console.warn('Função desconhecida:',val);
 	}
@@ -161,16 +174,16 @@ const carregaveis = [ // Elementos de dados ("s0-0", "s0-1", etc.)
 ];
 // // - DASHBOARD - // //
 carregaveis [modos.dashboard][0] = new numerico(0,0,'Total em Estoque', false,
-	async function () { return bdFunc (BDFUNC_TOTAL, 'estoq'); },
+	async function () { BDFUNC_COL = 0; return bdFunc (BDFUNC_TOTAL, 'estoq'); },
 	false);
 carregaveis [modos.dashboard][1] = new numerico(0,1,'Custo Total', true,
-	function () { return bdFunc (BDFUNC_TOTAL_QNT, 'custoUni'); },
+	function () { BDFUNC_COL = 0; return bdFunc (BDFUNC_TOTAL_QNT, 'custoUni'); },
 	false);
 carregaveis [modos.dashboard][2] = new numerico(0,2,'Faturamento', true,
-	function () { return bdFunc (BDFUNC_TOTAL_QNT, 'precoUni'); },
+	function () { BDFUNC_COL = 0; return bdFunc (BDFUNC_TOTAL_QNT, 'precoUni'); },
 	false);
 carregaveis [modos.dashboard][3] = new numerico(0,3,'Lucro', true,
-	function () { return bdFunc (BDFUNC_TOTAL_QNT, 'precoUni') - bdFunc (BDFUNC_TOTAL_QNT, 'custoUni'); },
+	function () { BDFUNC_COL = 0; return bdFunc (BDFUNC_TOTAL_QNT, 'precoUni') - bdFunc (BDFUNC_TOTAL_QNT, 'custoUni'); },
 	false);
 carregaveis [modos.dashboard][4] = new grafico(0,4,'Saldo Acumulado');
 carregaveis [modos.dashboard][5] = new combarra(0,5,'Estoque', 0); 
@@ -178,7 +191,7 @@ carregaveis [modos.dashboard][5] = new combarra(0,5,'Estoque', 0);
 // // - CADASTRO - // //
 //  Nível de produtos
 var estoqDesejavel = await svar('estoqDesejavel');
-carregaveis [modos.cadastro][0] = new numerico(1,0,'Estoque Desejável', false,
+carregaveis [modos.cadastro][0] = new numerico(1,0,'Estoque Desejável (%)', false,
 	async function () {
 		estoqDesejavel = await svar('estoqDesejavel');
 		return estoqDesejavel;
@@ -187,7 +200,7 @@ carregaveis [modos.cadastro][0] = new numerico(1,0,'Estoque Desejável', false,
 carregaveis [modos.cadastro][1] = new table(1,1,'Cadastro de Produtos', 0, [
 		{nome:'Produto',total:false,get: x => x.nome},
 		{nome:'Nível Mínimo',total:false,get: x => x.estoqMinimo},
-		{nome:'Nível Desejável',total:false,get: x => x.estoq*estoqDesejavel}, // TODO não lembro da fórmula
+		{nome:'Nível Desejável',total:false,get: x => Math.floor(x.estoqMinimo*(1+(estoqDesejavel*0.01)))},
 		{nome:'Quantidade',total:true,increment:true,get: x => x.estoq },
 		{nome:'Custo Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.custoUni)},
 		{nome:'Preço Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.precoUni)},
@@ -207,13 +220,25 @@ carregaveis [modos.alterar][0] = new table(2,0,'Produtos Cadastrados', 0, [
 
 // // - SAÍDA - // //
 // Venda do produto/relatório com o custo e lucro obtido
-carregaveis [modos.saida][0] = new numerico(3,0,'Custo Total', true);
-carregaveis [modos.saida][1] = new numerico(3,1,'Lucro Total', true);
-carregaveis [modos.saida][2] = new table(3,2,'Venda de Produtos');
+carregaveis [modos.saida][0] = new numerico(3,0,'Custo Total', true,
+	function () { BDFUNC_COL = 0; return bdFunc (BDFUNC_TOTAL_QNT, 'custoUni'); },
+	false);
+carregaveis [modos.saida][1] = new numerico(3,1,'Faturamento', true,
+	function () { BDFUNC_COL = 0; return bdFunc (BDFUNC_TOTAL_QNT, 'precoUni'); },
+	false);
+carregaveis [modos.saida][2] = new table(3,2,'Venda de Produtos', 1, [
+		{nome:'Produto',total:false,get: x => { BDFUNC_COL = 0; const r = bdFunc(BDFUNC_ACHAR,x.produto[OID]); return r ? r.nome : 'Objeto indefinido' }},
+		{nome:'Distribuidora',total:false,get: x => x.distribuidora},
+		{nome:'Quantidade',total:true,increment:true,get: x => x.estoq },
+		{nome:'Custo Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.custoUni)},
+		{nome:'Valor Total (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.custoUni * x.estoq)}
+]);
 
 // // - CONTROLE - // //
 // Imprime o que está de estoque baixo, produtos menos vendidos e mais vendidos.
-carregaveis [modos.controle][0] = new table(4,0,'AAAAAAAAAAAA');
+carregaveis [modos.controle][0] = new numerico(4,0,'Total em Estoque (R$)', true,
+	function () { return bdFunc (BDFUNC_TOTAL_QNT, 'precoUni'); },
+	false);
 
 const context = { bd:bd }
 function renderizarPag () {
