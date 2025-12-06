@@ -36,6 +36,7 @@ h2, h3, h4, h5 {
 	 no momento acho que não precisa mudar o tamanho? */
 }
 
+select,
 input {
 	width: 100%;
 	padding: 12px;
@@ -74,6 +75,7 @@ hr {
 
 input[type="submit"],
 button {
+	display: inline;
 	padding: 12px;
 	padding-left: 40px;
 	padding-right: 40px;
@@ -136,3 +138,5 @@ th, td {
 .bg-light {
 	background-color: var(--clr-main);
 }
+
+.container {}

@@ -35,8 +35,11 @@
 
 .bg {
 	z-index: -2;
+	display: flex;
 	flex: row;
-	height: 100vh;
+	width: 100%;
+	flex-grow: 1;
+	overflow: hide;
 	background-color: rgba(1,1,1,0); /* var(--clr-dark); */
 }
 
@@ -174,6 +177,13 @@
 	flex-direction: column;
 	flex-wrap: wrap;
 }
+.popup .row:has(button) {
+	flex-direction: row;
+}
+.popup span {
+	padding: 5px;
+	float: left;
+}
 
 .list-box {
 	padding: 0 20px;
@@ -181,6 +191,10 @@
 }
 .list-box .row hr {
 	background-color: var(--clr-darker);
+}
+
+.hidden {
+	display: none;
 }
 
 /* ----- TELA DE LOGIN ----- */
@@ -211,7 +225,7 @@
 	float: center;
 }
 .tb {
-	/* display: flex; */
+	display: inline;
 	max-width: 0.9em;
 	font-size: 1em;
 	color: var(--clr-dark);
@@ -250,7 +264,7 @@
 }
 
 .weakInput {
-	display: flex;
+	display: inline;
 	flex-grow: 1;
 	width: auto;
 	padding: 8px 12px;
@@ -267,17 +281,15 @@
 	float: left;
 	background-color: var(--clr-darker);
 	width: 25%;
-	height: 100%;
-	margin-right: auto;
+	height: calc(100%-var(padding));
 }
 
 #main-primary {
 	overflow-y: auto;
 	float: left;
 	padding: 25px;
-	width: 75%-var(padding);
-	height: 1080-var(padding);
-	margin-left: auto;
+	width: calc(75%-var(padding));
+	height: calc(100%-var(padding));
 }
 
 .marca-pag {
@@ -393,4 +405,16 @@
 .item-barra-nome {}
 .item-barra-estoq {
 	color: var(--clr-seco);
+}
+
+@keyframes perigo {
+	from { background-color: var(background-color); }
+	to { background-color: #a22; }
+}
+.perigo {
+	animation-name: perigo;
+	animation-duration: 878ms;
+	animation-timing-function: ease-in-out;
+	animation-iteration-count: infinite;
+	animation-direction: alternate;
 }

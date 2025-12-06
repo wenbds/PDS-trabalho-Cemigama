@@ -20,7 +20,7 @@ switch ($tipo) {
 
 $schemas = [
 	['nome','tipo','distribuidora','precoUni','custoUni','estoq','estoqMinimo'],
-	['produto','valor','data','cliente'],
+	['produto','valor','data','nome','cliente','quant'],
 	['nome','endereco','cpf-cnpj']
 ];
 
@@ -30,34 +30,40 @@ if ($resposta == 'w') {
 	$dados = $pedido['dados'] ?? [];
 	$x = [];
 	foreach ($schema as $y) {
+		if ($y === '_id') continue;
+		if (gettype($dados[$y])==='array') {
+			if (array_key_exists('oid',$dados[$y])) {
+				$x[$y] = new MongoDB\BSON\ObjectId($dados[$y]['oid']);
+				continue;
+			} else if (array_key_exists('date',$dados[$y])) {
+				$x[$y] = new MongoDB\BSON\UTCDateTime((int) $dados[$y]['milliseconds']);
+				continue;
+			}
+		}
 		$x[$y] = $dados[$y];
 	}
-	#print('Var dump of x:');
-	#var_dump($x);
+	print('Var dump of x:');
+	var_dump($x);
 	try {$resposta = $b->insertOne($x);}
 	catch (\Exception $e) {
-		print_r($document);
 		print_r($e);
 		exit();
 	}
 } else if ($resposta == 'wv') {
 	$varia = $pedido['var'];
 	if (!$varia) {
-		print('Sem nome da variável. Cancelando o procedimento por segurança.');
-		print_r($document);
+		print_r('Sem nome da variável. Cancelando o procedimento por segurança.');
 		exit();
 	}
 	$value = $pedido['val'];
 	if (!$value) {
-		print('Sem valor da variável. Cancelando o procedimento por segurança.');
-		print_r($document);
+		print_r('Sem valor da variável. Cancelando o procedimento por segurança.');
 		exit();
 	}
 	try {$resposta = $a->variaveis->updateOne(
 		['_id' => $varia],
 		['$set' => ['val' => $value]]);}
 	catch (\Exception $e) {
-		print_r($document);
 		print_r($e);
 		exit();
 	}
@@ -70,25 +76,33 @@ if ($resposta == 'w') {
 	$objeto = new MongoDB\BSON\ObjectId($objeto['_id']['$oid']);
 	try {$resposta = $b->deleteOne(['_id' => $objeto]);}
 	catch (\Exception $e) {
-		print_r($document);
 		print_r($e);
 		exit();
 	}
 } else if ($resposta == 'u') {
 	$objeto = $pedido['id'];
 	if (!$objeto) {
-		print('Sem ID do objeto. Cancelando o procedimento por segurança.');
-		print_r($document);
+		print_r('Sem ID do objeto. Cancelando o procedimento por segurança.');
 		exit();
 	}
 	$dados = $pedido['dados'];
 	if (!$dados) {
-		print('Sem dados. Cancelando o procedimento por segurança.');
-		print_r($document);
+		print_r('Sem dados. Cancelando o procedimento por segurança.');
 		exit();
 	}
 	$x = [];
 	foreach ($schema as $y) {
+		if ($dados[$y] === null || $y === '_id') continue;
+		if (gettype($dados[$y])==='array') {
+			if (array_key_exists('oid',$dados[$y])) {
+				$x[$y] = new MongoDB\BSON\ObjectId($dados[$y]['oid']);
+				continue;
+			} else if (array_key_exists('date',$dados[$y])) {
+				$x[$y] = new MongoDB\BSON\UTCDateTime((int) $dados[$y]['milliseconds']);
+				continue;
+			}
+		}
+		
 		$x[$y] = $dados[$y];
 	}
 	#print('Var dump of x:');
@@ -98,7 +112,6 @@ if ($resposta == 'w') {
 		['_id' => $objeto],
 		['$set' => $x]);}
 	catch (\Exception $e) {
-		print_r($document);
 		print_r($e);
 		exit();
 	}

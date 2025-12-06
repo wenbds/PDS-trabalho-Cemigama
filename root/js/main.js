@@ -25,7 +25,8 @@ const modos = {
 		alterar:2,
 		saida:3,
 		controle:4,
-		vendas:5
+		vendas:5,
+		clientes:6
 	}
 let current = modos.dashboard; // o modo selecionado
 
@@ -35,7 +36,8 @@ const modosNomes = [
 	"Alterar Produtos",
 	"Saída de Produtos",
 	"Controle de Estoque",
-	"Registro de Vendas"
+	"Registro de Vendas",
+	"Cadastro de Clientes"
 ]
 
 // Anatomia
@@ -76,8 +78,11 @@ wait(1200);
 	Este arquivo recebe dados através do `root/main/data.php`.
 */
 
-const bd = [ // Dados armazenados do banco de dados. Atualizados com ``
+const bd = [ // Dados armazenados do banco de dados. Atualizados com `atualizarDados`
 	[], [], [] // 0: produtos, 1: vendas 2: clientes
+];
+const foto = [ // Usado para diferenciar no `diferencieESalve`
+	[], [], []
 ];
 
 const plugarDados = '../main/data.php';
@@ -128,8 +133,8 @@ function bdFunc (val, arg) {
 			let total = 0.0;
 			for (const obj in collection) {
 				index = collection[obj]
-				if (!index[arg]) {
-					console.warn('Objeto inesperado no banco de produtos:',obj,'(não tem',arg,')');
+				if (index[arg] === undefined) {
+					console.warn('Objeto inesperado no banco de produtos:',index,'(não tem',arg,')');
 					continue;
 				}
 				total += Number.parseFloat(index[arg]);
@@ -139,8 +144,8 @@ function bdFunc (val, arg) {
 			let totalQ = 0.0;
 			for (const obj in collection) {
 				index = collection[obj]
-				if (!index[arg] || !index.estoq) {
-					console.warn('Objeto inesperado no banco de produtos:',obj,'(não tem',arg,')');
+				if (index[arg] === undefined || index.estoq === undefined) {
+					console.warn('Objeto inesperado no banco de produtos:',index,'(não tem',arg,' ou não tem estoq)');
 					continue;
 				}
 				totalQ += Number.parseFloat(index[arg]) * Number.parseFloat(index.estoq);
@@ -149,8 +154,8 @@ function bdFunc (val, arg) {
 		case BDFUNC_ACHAR:
 			for (const obj in collection) {
 				index = collection[obj]
-				if (!index._id) {
-					console.warn('Objeto inesperado no banco de produtos:',obj,'(não tem',arg,')');
+				if (index._id === undefined) {
+					console.warn('Objeto inesperado no banco de produtos:',index,'(não tem',arg,')');
 					continue;
 				}
 
@@ -169,8 +174,7 @@ function formatDinheiro (val) { return dinheiro.format(Number.parseFloat(val)); 
 
 const carregaveis = [ // Elementos de dados ("s0-0", "s0-1", etc.)
 	[], [], [],
-	  [], [],
-	    []
+	[], [], [], []
 ];
 // // - DASHBOARD - // //
 carregaveis [modos.dashboard][0] = new numerico(0,0,'Total em Estoque', false,
@@ -198,10 +202,10 @@ carregaveis [modos.cadastro][0] = new numerico(1,0,'Estoque Desejável (%)', fal
 	},
 	true);
 carregaveis [modos.cadastro][1] = new table(1,1,'Cadastro de Produtos', 0, [
-		{nome:'Produto',total:false,get: x => x.nome},
-		{nome:'Nível Mínimo',total:false,get: x => x.estoqMinimo},
+		{nome:'Produto',total:false,get:'nome'},
+		{nome:'Nível Mínimo',total:false,increment:true,get:'estoqMinimo'},
 		{nome:'Nível Desejável',total:false,get: x => Math.floor(x.estoqMinimo*(1+(estoqDesejavel*0.01)))},
-		{nome:'Quantidade',total:true,increment:true,get: x => x.estoq },
+		{nome:'Quantidade',total:true,increment:true,get:'estoq'},
 		{nome:'Custo Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.custoUni)},
 		{nome:'Preço Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.precoUni)},
 		{nome:'Lucro Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.precoUni - x.custoUni)}
@@ -210,29 +214,22 @@ carregaveis [modos.cadastro][1] = new table(1,1,'Cadastro de Produtos', 0, [
 // // - ALTERAR - // //
 // Alterar produtos
 carregaveis [modos.alterar][0] = new table(2,0,'Produtos Cadastrados', 0, [
-		{nome:'Produto',total:false,get: x => x.nome},
-		{nome:'Distribuidora',total:false,get: x => x.distribuidora},
-		{nome:'Quantidade',total:true,increment:true,get: x => x.estoq },
+		{nome:'Produto',total:false,get:'nome'},
+		{nome:'Distribuidora',total:false,get:'distribuidora'},
+		{nome:'Quantidade',total:true,increment:true,get:'estoq'},
 		{nome:'Custo Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.custoUni)},
 		{nome:'Preço Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.precoUni)},
 		{nome:'Lucro (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.precoUni * x.estoq - x.custoUni * x.estoq)}
 	 ]);
 
 // // - SAÍDA - // //
-// Venda do produto/relatório com o custo e lucro obtido
+// relatório com o custo e lucro obtido
 carregaveis [modos.saida][0] = new numerico(3,0,'Custo Total', true,
 	function () { BDFUNC_COL = 0; return bdFunc (BDFUNC_TOTAL_QNT, 'custoUni'); },
 	false);
 carregaveis [modos.saida][1] = new numerico(3,1,'Faturamento', true,
 	function () { BDFUNC_COL = 0; return bdFunc (BDFUNC_TOTAL_QNT, 'precoUni'); },
 	false);
-carregaveis [modos.saida][2] = new table(3,2,'Venda de Produtos', 1, [
-		{nome:'Produto',total:false,get: x => { BDFUNC_COL = 0; const r = bdFunc(BDFUNC_ACHAR,x.produto[OID]); return r ? r.nome : 'Objeto indefinido' }},
-		{nome:'Distribuidora',total:false,get: x => x.distribuidora},
-		{nome:'Quantidade',total:true,increment:true,get: x => x.estoq },
-		{nome:'Custo Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.custoUni)},
-		{nome:'Valor Total (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.custoUni * x.estoq)}
-]);
 
 // // - CONTROLE - // //
 // Imprime o que está de estoque baixo, produtos menos vendidos e mais vendidos.
@@ -240,7 +237,37 @@ carregaveis [modos.controle][0] = new numerico(4,0,'Total em Estoque (R$)', true
 	function () { return bdFunc (BDFUNC_TOTAL_QNT, 'precoUni'); },
 	false);
 
-const context = { bd:bd }
+// // - VENDAS - // //
+// Gerencia vendas efetivadas.
+carregaveis [modos.vendas][0] = new table(5,0,'Vendas Efetivadas', 1, [
+		{nome:'Produto',total:false,get:'produto',obj:'nome'},
+		{nome:'Cliente',total:false,get:'cliente',obj:'nome'},
+		{nome:'Descrição',total:false,get:'nome'},
+		{nome:'Data',total:false,get:'data'},
+		{nome:'Valor (R$)',total:true,totalget: x => formatDinheiro(x), get: x => formatDinheiro(x.valor)},
+		{nome:'Quantidade do Produto',total:true,get:'quant'},
+], {
+	adicionando: (self) => {
+		
+	}
+});
+carregaveis [modos.vendas][1] = new numerico(5,1,'Total de Pedidos', false,
+	function () { return bd[1].length; },
+	false);
+carregaveis [modos.vendas][2] = new numerico(5,2,'Valor Total de Compras', true,
+	async function () { BDFUNC_COL = 1; return bdFunc (BDFUNC_TOTAL, 'valor'); },
+	false);
+
+// // - CLIENTES - // //
+// Gerencia clientes.
+carregaveis [modos.clientes][0] = new table(6,0,'Cadastro de Clientes', 2, [
+		{nome:'Nome',total:false,get:'nome'},
+		{nome:'Endereço',total:false,get:'endereco'},
+		{nome:'CPF/CNPJ',total:false,get:'cpf-cnpj'},
+]);
+
+
+const context = { bd:bd, estoqDesejavel:estoqDesejavel }
 function renderizarPag () {
 	const praCarregar = carregaveis[current];
 	const strObjetos  = 's'+current+'-';
@@ -271,7 +298,36 @@ async function atualizarDados (bin) {
 	for (let i = 0; i < bd.length; i++) {
 		if (!(bin & (1 << i))) { continue; }
 		bd[i] = await pedir(i);
+		foto[i] = [].concat(bd[i]);
 	}
+}
+
+// Detecta as diferenças nos dados.
+function pegaDiferenças () {
+	const diferenças = [];
+	for (const i in bd) {
+		const collection = bd[i];
+		const snapshot = [].concat(collection);
+		for (const j in collection) {
+			const item = collection[j];
+			for (const k in item) {
+				const index = item[k];
+				if (index !== foto[i][j][k]) diferenças.push([i,j,k,index]);
+			}
+		}
+	}
+
+	return diferenças.length > 0 ? diferenças : null;
+}
+
+// Detecta as diferenças nos dados e manda para o editor salvar.
+async function diferencieESalve (ediDiferenças) {
+	const diferenças = ediDiferenças || pegaDiferenças();
+	if (!diferenças) {
+		console.warn('Não tem diferenças, mas diferencieESalve foi usado.');
+		return;
+	}
+
 }
 
 // // 
@@ -285,8 +341,16 @@ await updateModo(current); // inicializar com o modo que já existe
 
 // Execução de update
 setInterval(await async function() {
-	if (!editor.shouldUpdate) { return; }
+	if (editor.wait > 0 || !editor.shouldUpdate) { return; }
 	await atualizarDados(ATLZR_TODOS);
 	await renderizarPag();
 	editor.updated();
 }, 500)
+
+// Execução de beUpdated
+setInterval(await async function() {
+	if (editor.wait > 0 || !editor.shouldBeUpdated) { return; }
+	await diferencieESalve(editor.diferenças);
+	await editor.beUpdated();
+	editor.updating();
+}, 501)

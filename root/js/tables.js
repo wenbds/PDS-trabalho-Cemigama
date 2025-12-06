@@ -1,5 +1,19 @@
 import { default as fator, generico } from './fator.js';
 import { default as editor } from './editor.js';
+const getObject = (data, id) => {
+	let bd, collection, obj;
+	for (const x in data) {
+		bd = data[x]
+		for (const y in bd) {
+			collection = data[y];
+			for (const z in collection) {
+				obj = collection[z];
+				if (obj._id === undefined || obj._id['$oid'] !== id['$oid']) continue;
+				return obj;
+			}
+		}
+	}
+}
 
 export default class table extends generico {
 	/*
@@ -8,11 +22,11 @@ export default class table extends generico {
 	 
 	 ex.:
 	 new table(2,0,'Produtos Cadastrados', bdProdutos, [
-		{nome:'Produto',total:false,get: x => x.nome},
-		{nome:'Distribuidora',total:false,get: x => x.distribuidora},
-		{nome:'Data',total:false,get: x => x.data },
-		{nome:'Quantidade',total:true,get: x => x.estoq },
-		{nome:'Custo Unitário (R$)',total:true,get: x => x.custoUni },
+		{nome:'Produto',total:false,get:'nome'},
+		{nome:'Distribuidora',total:false,get:'distribuidora'},
+		{nome:'Data',total:false,get:'data'},
+		{nome:'Quantidade',total:true,get:'estoq'},
+		{nome:'Custo Unitário (R$)',total:true,get:'custoUni'},
 		{nome:'Valor Total (R$)',total:true,get: x => x.custoUni * x.estoq }
 	 ]);
 	 */
@@ -78,10 +92,12 @@ export default class table extends generico {
 
 			this.cols[i] = td;
 		}
-		total.colSpan = colspan;
+		if (colspan >= this.trackers.length) tfootRow.classList.add('hidden');
+		else total.colSpan = colspan;
 	}
 
 	row (i,fonte) {
+		const thisData = this.data[this.bd][i];
 		const tr = document.createElement('tr');
 		this.tbody.appendChild(tr);
 		tr.id = this.fator.strval+i.toString(); // então vai parecer como ex.: s2-0n1
@@ -91,7 +107,16 @@ export default class table extends generico {
 			this.qcol += 1;
 			const html = document.createElement(elem);
 			if (elem !== 'td') { elem = 'td'; } // Faz que o primeiro item seja th.
-			html.appendChild(document.createTextNode(tracker.get(fonte)));
+			html.appendChild(document.createTextNode(
+				typeof tracker.get === 'function'
+				? tracker.get(fonte)
+				: typeof fonte[tracker.get] === 'object'
+					? fonte[tracker.get]['$oid'] !== undefined
+						? getObject(this.data, fonte[tracker.get])
+							? getObject(this.data, fonte[tracker.get])[tracker.obj || 'nome']
+							: fonte[tracker.get]
+						: new Date(Number.parseFloat(fonte[tracker.get]['$date']['$numberLong'])).toLocaleString('pt-BR')
+					: fonte[tracker.get]));
 			tr.appendChild(html);
 			if (tracker.increment) {
 				const buttonInc = document.createElement('a');
@@ -99,7 +124,11 @@ export default class table extends generico {
 				buttonInc.appendChild(document.createTextNode('⬆'));
 				buttonInc.onclick = event => {
 					this.getSelected();
-					editor.select(1, this.data[i]);
+					editor.select(1, thisData);
+					thisData[tracker.get] += 1;
+					this.render({bd:thisData});
+					editor.setWait(10);
+					editor.beUpdating({bd:{[this.bd]:{[i]:{_id:{['$oid']:thisData._id['$oid']},[tracker.get]:thisData[tracker.get]}}}});
 				}
 				html.appendChild(buttonInc);
 				const buttonDec = document.createElement('a');
@@ -107,12 +136,21 @@ export default class table extends generico {
 				buttonDec.appendChild(document.createTextNode('⬇'));
 				buttonDec.onclick = event => {
 					this.getSelected();
-					editor.select(1, this.data[i]);
+					editor.select(1, thisData);
+					thisData[tracker.get] -= 1;
+					this.render({bd:thisData});
+					editor.setWait(10);
+					editor.beUpdating({bd:{[this.bd]:{[i]:{_id:{['$oid']:thisData._id['$oid']},[tracker.get]:thisData[tracker.get]}}}});
 				}
 				html.appendChild(buttonDec);
 			}
 		}
 		return tr;
+	}
+
+	getSelected () {
+		editor.select(0,this);
+		editor.selectMode(this.bd);
 	}
 
 	clear () {
@@ -130,9 +168,9 @@ export default class table extends generico {
 	}
 
 	fill () {
-		for (const i in this.data) {
+		for (const i in this.data[this.bd]) {
 			this.qrow += 1;
-			this.rows[i] = this.row(i, this.data[i]);
+			this.rows[i] = this.row(i, this.data[this.bd][i]);
 		}
 	}
 
@@ -142,13 +180,23 @@ export default class table extends generico {
 		this.tbody.appendChild(adicionRow);
 		const adicionBg  = document.createElement('th');
 		adicionBg.scope = 'row';
-		adicionBg.colSpan = this.qcol;
+		adicionBg.colSpan = this.qcol+1;
 		adicionRow.appendChild(adicionBg);
 		const adicionBtn = document.createElement('button')
-		adicionBtn.onclick = event => (editor.openPronto(`adicionar${this.bd}`));
+		adicionBtn.onclick = event => (editor.openPronto(`adicionar${this.bd}`, this.data));
 		adicionBtn.classList.add('tbBig');
 		adicionBtn.appendChild(document.createTextNode('＋'));
 		adicionBg.appendChild(adicionBtn);
+
+		/* TODO@feat: Barra de pesquisa
+		const pesquisa = document.createElement('tr');
+		this.tbody.insertBefore(pesquisa,this.tbody.children[0]);
+		const pesquisBg = document.createElement('th');
+		pesquisBg.scope = 'row';
+		pesquisBg.colSpan = this.qcol+1;
+		pesquisa.appendChild(pesquisBg);
+		pesquisBg.appendChild(document.createTextNode('＋'));
+		*/
 		
 		// Remover/Editar itens na tabela
 		const rmedHead = document.createElement('th');
@@ -167,8 +215,8 @@ export default class table extends generico {
 			rmedButtonRmv.appendChild(document.createTextNode('ー'));
 			rmedButtonRmv.onclick = event => {
 				this.getSelected();
-				editor.select(1, this.data[i]);
-				editor.openPronto('remover');
+				editor.select(1, this.data[this.bd][i]);
+				editor.openPronto('remover',this.data);
 			};
 			rmedTd.appendChild(rmedButtonRmv);
 			const rmedButtonEdi = document.createElement('a');
@@ -176,8 +224,8 @@ export default class table extends generico {
 			rmedButtonEdi.appendChild(document.createTextNode('＠'));
 			rmedButtonEdi.onclick = event => {
 				this.getSelected();
-				editor.select(1, this.data[i]);
-				editor.openPronto(`alterar${this.bd}`);
+				editor.select(1, this.data[this.bd][i]);
+				editor.openPronto(`alterar${this.bd}`,this.data);
 			};
 			rmedTd.appendChild(rmedButtonEdi);
 		}
@@ -196,7 +244,7 @@ export default class table extends generico {
 
 	render (ctx) {
 		this.labelize();
-		this.data = ctx.bd[this.bd]
+		this.data = ctx.bd
 		this.clear();
 		this.fill();
 		this.totalizar();
@@ -205,44 +253,50 @@ export default class table extends generico {
 }
 
 export class itemBarra {
-	ligado = {nome:'-',estoq:0}; // Algum objeto com {nome:string, estoq:int}
+	ligado = {nome:'-'}; // Algum objeto com {nome:string}
 
 	elemento;
 	elemNome;
 	elemEstoq;
 
-	constructor (item) {
+	constructor (ctx, item) {
 		this.ligado = item;
 
 		this.elemento = document.createElement('div');
 		this.elemento.classList.add('item-barra');
 
-		this.elemEstoq = document.createElement('span');
-		this.elemEstoq.classList.add('item-barra-estoq');
-		this.elemento.appendChild(this.elemEstoq);
-		// this.elemEstoq.textContent = this.ligado.estoq;
+		if (this.ligado.estoq !== undefined) {
+			this.elemEstoq = document.createElement('span');
+			this.elemEstoq.classList.add('item-barra-estoq');
+			this.elemento.appendChild(this.elemEstoq);
+			// this.elemEstoq.textContent = this.ligado.estoq;
+		}
 		this.elemNome = document.createElement('span');
 		this.elemNome.classList.add('item-barra-nome');
 		this.elemento.appendChild(this.elemNome);
 		// this.elemNome.textContent = this.ligado.nome;
 
-		this.render();
+		this.render(ctx);
 	}
 
-	render () {
+	render (ctx) {
 		this.elemEstoq.textContent = this.ligado.estoq.toString()+' × ';
 		this.elemNome.textContent = this.ligado.nome;
+
+		if (this.ligado.estoq !== undefined && this.ligado.estoq < Math.floor(this.ligado.estoqMinimo*(1+(ctx.estoqDesejavel*0.01)))) this.elemento.classList.add('perigo');
+		else this.elemento.classList.remove('perigo');
 	}
 
-	atualizar (elemEstoq, elemNome) {
+	atualizar (ctx, elemEstoq, elemNome) {
 		if (!this.ligado) {
 			this.morrer();
 			return;
 		}
-		this.render();
+		this.render(ctx);
 	}
 
 	morrer () {
+		delete this.combarra;
 		this.elemento.remove();
 		delete this.ligado;
 	}
@@ -250,6 +304,7 @@ export class itemBarra {
 
 export class combarra extends generico {
 	bd = 0;
+	dataDsj = 0;
 	data = [];
 	itens = [];
 
@@ -261,9 +316,9 @@ export class combarra extends generico {
 		this.elemValue.innerHTML = '';
 	}
 
-	atualizar () {
+	atualizar (ctx) {
 		for (const i in this.itens) {
-			this.itens[i].atualizar();
+			this.itens[i].atualizar(ctx);
 		}
 	}
 	
@@ -275,19 +330,20 @@ export class combarra extends generico {
 		this.elemValue.innerHTML = '';
 	}
 
-	fill () {
+	fill (ctx) {
 		var item;
 		for (const i in this.data) {
 			item = this.data[i];
-			this.itens[i] = new itemBarra(item);
+			this.itens[i] = new itemBarra(ctx, item);
 			this.elemValue.appendChild(this.itens[i].elemento);
 		}
 	}
 
 	render (ctx) {
 		this.labelize();
-		this.data = ctx.bd[this.bd]
+		this.dataDsj = ctx.estoqDesejavel;
+		this.data = ctx.bd[this.bd];
 		this.clear();
-		this.fill();
+		this.fill(ctx);
 	}
 }

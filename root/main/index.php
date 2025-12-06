@@ -32,6 +32,7 @@ if (empty($_SESSION["session"])) {
 					<button class="marca-pag" id='marca3' data-mode=3 data-sel=false type="button">Saída</button>
 					<button class="marca-pag" id='marca4' data-mode=4 data-sel=false type="button">Controle</button>
 					<button class="marca-pag" id='marca5' data-mode=5 data-sel=false type="button">Vendas</button>
+					<button class="marca-pag" id='marca6' data-mode=6 data-sel=false type="button">Clientes</button>
 				</div>
 
 				<div id="main-primary" data-current=0>
@@ -279,7 +280,19 @@ if (empty($_SESSION["session"])) {
 						</div>
 					</div>
 
-					<div class="section" data-mode=5 id="main5"> <!-- Compras -->
+					<div class="section" data-mode=5 id="main5"> <!-- Vendas -->
+						<div class="row">
+							<div class="fator" id="s5-1">
+								<h3>Total de Pedidos</h3>
+								<span id="s5-1n">0</span>
+							</div>
+							<div class="fator" id="s5-2">
+								<h3>Valor Total de Compras</h3>
+								<span class="fator-reais">R$</span>
+								<span id="s5-2n">0</span>
+							</div>
+						</div>
+
 						<div class="row">
 							<div class="fator tabela" id="s5-0">
 								<h3>Registro de Compras</h3>
@@ -311,51 +324,34 @@ if (empty($_SESSION["session"])) {
 									</tfoot>
 								</table>
 							</div>
-							<div class="fator tabela" id="s5-0">
-								<h3>Últimas Compras</h3>
-								<table>
+						</div>
+					</div>
+
+					<div class="section" data-mode=6 id="main6"> <!-- Clientes -->
+						<div class="row">
+							<div class="fator tabela" id="s6-0">
+								<h3>Cadastro de Clientes</h3>
+								<table id="s6-0n">
 									<thead>
 										<tr>
-											<th scope="col">Produto</th>
-											<th scope="col">Data</th>
-											<th scope="col">Quantidade</th>
-											<th scope="col">Custo (R$)</th>
+											<th scope="col">Socorro</th>
 										</tr>
 									</thead>
 									<tbody>
 										<tr>
-											<th scope="row">Teste</th>
-											<td>00/00/0000</td>
-											<td>30</td>
-											<td>1200</td>
+											<th scope="row">Eu nunca quero fazer isso na minha vida de novo</th>
 										</tr>
 									</tbody>
 									<tfoot>
 										<tr>
-											<th scope="row" colspan="3">Total</th>
-											<td>1200</td>
+											<th scope="row">Total</th>
 										</tr>
 									</tfoot>
 								</table>
 							</div>
 						</div>
-	
-						<div class="row">
-							<div class="fator" id="s5-1">
-								<h3>Total de Pedidos</h3>
-								<span id="s5-1n">0</span>
-							</div>
-							<div class="fator" id="s5-2">
-								<h3>Valor Total de Compras</h3>
-								<span class="fator-reais">R$</span>
-								<span id="s5-2n">0</span>
-							</div>
-							<div class="fator" id="s5-1">
-								<h3>Pedidos Pendentes</h3>
-								<span id="s5-1n">0</span>
-							</div>
-						</div>
 					</div>
+
 				</div>
 			</div>
 		</div>

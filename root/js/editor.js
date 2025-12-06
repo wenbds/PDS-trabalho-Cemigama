@@ -50,11 +50,12 @@ const PSCHEMA_MATERIAL = [
 	[[handler.PART_NUMERO,'estoqMinimo','Estoque mínimo',0]]
 ]
 const PSCHEMA_VENDA = [
-	[[handler.PART_DROP,'cliente','Cliente']],
-	[[handler.PART_DROP,'produto','Material vendido']],
+	[[handler.PART_INPUT,'nome','Descrição','']],
+	[[handler.PART_DROP,'cliente','Cliente',0,{listaDe:[0,0,1],prop:'nome',fallback:'-- Selecione um cliente --'} ]],
+	[[handler.PART_DROP,'produto','Material vendido',0,{listaDe:[1,0,0],prop:'nome',fallback:'-- Selecione um material --'} ]],
 	[[handler.PART_MONEY,'valor','Valor (R$)',0]],
 	[[handler.PART_NUMERO,'quant','Quantidade',0]],
-	[[handler.PART_TIME,'data','Data','HOJE']]
+	[[handler.PART_TIME,'data','Data',Date.now()]]
 ]
 const PSCHEMA_CLIENTE = [
 	[[handler.PART_INPUT,'nome','Nome','']],
@@ -62,15 +63,31 @@ const PSCHEMA_CLIENTE = [
 	[[handler.PART_CPFCNPJ,'cpf-cnpj','CPF/CNPJ','']]
 ]
 
-function factoryAdicionar (mode, nome) {
+async function checkCerto (self) {
+	await self.popup.save();
+	for (const i in self.popup.partes) {
+		const part = self.popup.partes [i];
+		if (part.element.value.required && !part.value) {
+			return false;
+		}
+	}
+	return true;
+}
+
+function factoryAdicionar (mode, nome, artigo) {
 	return async function(self) {
+		if (!await checkCerto(self)) {
+			popResponse(handler.TIPO_ERRO, "Erro", "Há campos obrigatórios despreenchidos.");
+			return;
+		}
 		await self.popup.close();
 		const r = handler.getBuffer(0);
+		console.log(r);
 		pedido.fazer = 'w';
-		pedido.tipo = selectMode;
+		pedido.tipo = mode;
 		pedido.dados = r;
 		const response = await edit();
-		if (response && response.ok) { popResponse(handler.TIPO_NORMAL, "Sucesso", `${String(nome).charAt(0).toUpperCase() + String(nome).slice(1)} "${r.nome}" cadastrado`);
+		if (response && response.ok) { popResponse(handler.TIPO_NORMAL, "Sucesso", `${String(nome).charAt(0).toUpperCase() + String(nome).slice(1)} ${r.nome} cadastrad${artigo}`);
 		} else { popResponse(handler.TIPO_ERRO, "Erro", `Erro tentando cadastrar ${String(nome)}. Resposta: `+response.json()); }
 	}
 }
@@ -90,7 +107,7 @@ function factoryAdicionarSchema (mode, nome, artigo, schema) {
 		}
 	}
 
-	novo[3].push([[handler.PART_BOTAO,'btCriar','Adicionar',factoryAdicionar(mode,nome)],
+	novo[3].push([[handler.PART_BOTAO,'btCriar','Adicionar',factoryAdicionar(mode,nome,artigo)],
 	 [handler.PART_BOTAO,'btCancelar','Cancelar',async function(self) {
 		// TODO Confirmar? Ou simplesmente tira esse treco?
 		self.popup.modalSave = -1;
@@ -101,14 +118,18 @@ function factoryAdicionarSchema (mode, nome, artigo, schema) {
 
 function factoryAlterar (mode, nome) {
 	return async function(self) {
+		if (!await checkCerto(self)) {
+			popResponse(handler.TIPO_ERRO, "Erro", "Há campos obrigatórios despreenchidos.");
+			return;
+		}
 		await self.popup.close();
 		const r = handler.getBuffer(1);
 		pedido.fazer = 'u';
-		pedido.tipo = selectMode;
+		pedido.tipo = mode;
 		pedido.id = selection[1]._id['$oid'];
 		pedido.dados = r;
 		const response = await edit();
-		if (response && response.ok) { popResponse(handler.TIPO_NORMAL, "Sucesso", `${String(nome).charAt(0).toUpperCase() + String(nome).slice(1)} "${r.nome}" alterado`);
+		if (response && response.ok) { popResponse(handler.TIPO_NORMAL, "Sucesso", `${String(nome).charAt(0).toUpperCase() + String(nome).slice(1)} ${r.nome} alterado`);
 		} else { popResponse(handler.TIPO_ERRO, "Erro", `Erro tentando alterar ${String(nome)}. Resposta: `+response.json()); }
 	}
 }
@@ -116,7 +137,7 @@ function factoryAlterar (mode, nome) {
 function factoryAlterarSchema (mode, nome, artigo, schema) {
 	const novo = [
 		`Alterar ${nome}`,
-		() => `Preencha todos os campos descrevendo mudanças n${artigo} ${nome} "${selection[1].nome}".`,
+		() => `Preencha todos os campos descrevendo mudanças n${artigo} ${nome} ${selection[1].nome}.`,
 		1,
 		[]
 	];
@@ -146,7 +167,7 @@ function factoryAlterarSchema (mode, nome, artigo, schema) {
 const jáPronto = {
 	remover: [
 		"Remover item",
-		() => `Você tem certeza que quer remover o item "${selection[1].nome}" da tabela?\nNão será possível desfazer esta decisão.`,
+		() => `Você tem certeza que quer remover ${selection[1].nome} da tabela?\nNão será possível desfazer esta decisão.`,
 		null,
 		[
 			[[handler.PART_BOTAO,'btSim','Sim', async function(self) {
@@ -163,27 +184,39 @@ const jáPronto = {
 		]
 	],
 	adicionar0: await factoryAdicionarSchema(0, 'material', 'o', PSCHEMA_MATERIAL),
-	adicionar1: await factoryAdicionarSchema(0, 'venda', 'a', PSCHEMA_VENDA),
-	adicionar2: await factoryAdicionarSchema(0, 'cliente', 'o(a)', PSCHEMA_CLIENTE),
+	adicionar1: await factoryAdicionarSchema(1, 'venda', 'a', PSCHEMA_VENDA),
+	adicionar2: await factoryAdicionarSchema(2, 'cliente', 'o(a)', PSCHEMA_CLIENTE),
 	alterar0: await factoryAlterarSchema(0, 'material', 'o', PSCHEMA_MATERIAL),
-	alterar1: await factoryAlterarSchema(0, 'venda', 'a', PSCHEMA_VENDA),
-	alterar2: await factoryAlterarSchema(0, 'cliente', 'o(a)', PSCHEMA_CLIENTE)
+	alterar1: await factoryAlterarSchema(1, 'venda', 'a', PSCHEMA_VENDA),
+	alterar2: await factoryAlterarSchema(2, 'cliente', 'o(a)', PSCHEMA_CLIENTE)
+}
+
+async function editAtualizar(mode, id, r) {
+	pedido.fazer = 'u';
+	pedido.tipo = mode;
+	pedido.id = id;
+	pedido.dados = r;
+	const response = await edit();
+	if (!(response && response.ok)) popResponse(handler.TIPO_ERRO, "Erro", `Erro tentando alterar ${String(nome)}. Resposta: `+response.json());
 }
 
 class editAPI {
 	popup;
+	wait = 0;
 	shouldUpdate = false;
+	shouldBeUpdated = false;
+	diferenças;
 
-	select (slot, variable) {
-		selection [slot || 0] = variable;
-	}
+	select (slot, variable) { selection [slot || 0] = variable; }
+	selectMode (mode) { selectMode = mode; }
 
 	clearSelection () {
 		selection = [];
 		selectionMany = [];
 	}
 
-	open (title, msg, partes, save) {
+	open (title, msg, partes, save, ctx) {
+		if (this.ctx) handler.setContext(ctx);
 		this.popup = new popup(handler.TIPO_NORMAL, title, msg, partes);
 		this.popup.modalSave = save;
 		this.popup.modal = true;
@@ -196,6 +229,7 @@ class editAPI {
 			throwErro('Lista não existe no índice: '+index.toString());
 			return;
 		}
+		if (ctx !== undefined) handler.setContext(ctx);
 		this.open(
 			typeof lista[0] === 'function' ? lista[0](ctx) : lista[0],
 			typeof lista[1] === 'function' ? lista[1](ctx) : lista[1],
@@ -217,6 +251,13 @@ class editAPI {
 		} else { popResponse(handler.TIPO_ERRO, "Erro", `Erro tentando alterar variável. Resposta: `+response.json()); }
 	}
 
+
+	// Faz esperar
+	setWait(val) {
+		this.wait = val;
+	}
+
+
 	// Chama a atualização do main/index.php
 	updating() {
 		this.shouldUpdate = true;
@@ -226,7 +267,43 @@ class editAPI {
 	updated() {
 		this.shouldUpdate = false;
 	}
+
+	// Chama a função do main/index.php
+	beUpdating(diferença) {
+		if (diferença) {
+			this.diferenças = {};
+			for (const i in diferença) {
+				this.diferenças[i] = diferença[i];
+			}
+		}
+		this.shouldBeUpdated = true;
+	}
+
+	// Resposta do main/index.php
+	beUpdated() {
+		this.shouldBeUpdated = false;
+		if (this.diferenças) {
+			if (this.diferenças.bd) {
+				console.log('bd');
+				console.log(this.diferenças);
+				for (const i in this.diferenças.bd) {
+					const collection = this.diferenças.bd [i]
+					for (const j in collection) {
+						const item = collection[j];
+						editAtualizar(i, item._id['$oid'], item);
+					}
+				}
+			}
+		}
+		this.diferenças = null;
+	}
 }
 
 var editor = new editAPI();
 export default editor; 
+
+// Intervalo para reduzir espera
+setInterval(() => {
+	if (editor.wait <= 0) return;
+	editor.wait -= 1;
+}, 100)

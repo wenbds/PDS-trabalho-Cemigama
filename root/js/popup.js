@@ -12,6 +12,10 @@ const bufferSave = [{},{},{},{},{},{},{},{}];
 export function getBuffer (slot) {
 	return bufferSave [slot];
 }
+var bufferCtx;
+export function setContext (ctx) {
+	bufferCtx = ctx;
+}
 
 export const TIPO_NORMAL = 0;
 export const TIPO_AVISO  = 1;
@@ -102,8 +106,6 @@ export default class popup {
 		for (const i in this.partes) {
 			const parte = this.partes[i];
 			parte.save(slot);
-			parte.remove();
-			delete this.partes [i], parte;
 		}
 	}
 
@@ -137,6 +139,19 @@ export const PART_CPFCNPJ= 10;
 function parseVirgula(str) {
 	return Number.parseFloat(str.toString().replaceAll('.','').replace(',', '.'));
 }
+function parseCPF(str) {
+	var res = str.toString().substring(0,14).replaceAll('.','').replaceAll(',','')
+	return res;
+}
+function cpfFormat(str) {
+	var res = str.toString();
+	if (res.length <= 11) {
+		res = Number.parseInt(res);
+	} else {
+		
+	}
+	return res.toString();
+}
 const dinheiro = new Intl.NumberFormat('pt-BR',{style:'decimal',currencyDisplay:'code',maximumFractionDigits:2,minimumFractionDigits:2});
 export const PART_DATA = [ ];
 	PART_DATA [PART_TITULO] = {elem:'h2',noName:true,nameInside:true};
@@ -144,12 +159,12 @@ export const PART_DATA = [ ];
 	PART_DATA [PART_BOTAO]  = {elem:'button',noName:true,nameInside:true};
 	PART_DATA [PART_DIVISN] = {elem:'hr',noName:true,elemIsBase:true};
 	PART_DATA [PART_INPUT]  = {elem:'input'};
-	PART_DATA [PART_NUMERO] = {elem:'input',reader: self => parseVirgula(self) };
+	PART_DATA [PART_NUMERO] = {elem:'input',reader: self => parseVirgula(self), format: self => parseVirgula(self) };
 	PART_DATA [PART_MONEY]  = {elem:'input',reader: self => parseVirgula(self), format: self => dinheiro.format(parseVirgula(self))};
-	PART_DATA [PART_DROP]   = {elem:'input'};
+	PART_DATA [PART_DROP]   = {elem:'select'};
 	PART_DATA [PART_LISTA]  = {elem:'div'};
-	PART_DATA [PART_TIME]   = {elem:'input'};
-	PART_DATA [PART_CPFCNPJ]= {elem:'input'};
+	PART_DATA [PART_TIME]   = {elem:'input',parser: self => typeof self === 'object' && self['$date'] !== undefined ? new Date(Number.parseFloat(self['$date']['$numberLong'])).toString() : self};
+	PART_DATA [PART_CPFCNPJ]= {elem:'input',reader: self => parseCPF(self), format: self => cpfFormat(parseCPF(self))};
 
 export class popupPart {
 	tipo = PART_TEXTO;
@@ -162,6 +177,7 @@ export class popupPart {
 	constructor (tipo, nome, display, value, conteudo, saveSlot) {
 		this.tipo = tipo;
 		const part = PART_DATA[this.tipo];
+		const parser = part.parser || (x => x);
 		if (!part) {
 			console.warn(`No type for ${this.tipo}: ${part}`);
 			return;
@@ -170,11 +186,15 @@ export class popupPart {
 		this.display = display;
 
 		if (typeof value !== 'function' && bufferSave [saveSlot] !== undefined && bufferSave [saveSlot] [nome] !== undefined) {
-			this.value = bufferSave [saveSlot] [nome];
+			this.value = parser(bufferSave [saveSlot] [nome]);
 			delete bufferSave [saveSlot] [nome];
-		} else {this.value = (typeof value === 'function' && this.tipo !== PART_BOTAO) ? value() : value;}
+		} else
+			this.value = parser(
+				typeof value === 'function' && this.tipo !== PART_BOTAO
+					? value()
+					: value);
 
-		this.conteudo = conteudo;
+		this.conteudo = conteudo; // Utilizado por PART_DROP
 
 		const elemBase = document.createElement(!part.elemIsBase ? 'span' : part.elem);
 		elemBase.id = 'popup-'+this.nome;
@@ -187,6 +207,9 @@ export class popupPart {
 		elemBase.appendChild(elemNome);
 
 		const elemValue = document.createElement(!part.elemIsBase ? part.elem : 'span');
+		if (part.elem === 'input' || part.elem === 'select') {
+			elemValue.name = this.nome;
+		}
 		elemValue.id = 'popup-'+this.nome+'v';
 		if (part.nameInside) elemValue.appendChild(document.createTextNode(this.display));
 		if (part.valueInside) elemValue.appendChild(document.createTextNode(this.value));
@@ -194,10 +217,38 @@ export class popupPart {
 		this.element.value = elemValue;
 		elemBase.appendChild(elemValue);
 
-
 		if (this.tipo === PART_BOTAO) { 
 			elemValue.addEventListener('click', () => {
 				if (typeof this.value === 'function') { this.value(this); } });
+		} else if (this.tipo === PART_DROP) {
+			const buffer = bufferCtx;
+			
+			const fallback = document.createElement('option');
+			fallback.value = null; 
+			fallback.appendChild(document.createTextNode(this.conteudo.fallback || '--'));
+			elemValue.appendChild(fallback);
+			
+			elemValue.required = true;
+			elemValue.onchange = event => {
+				this.value = elemValue.value;
+			}
+
+			for (const i in buffer) {
+				if (!this.conteudo.listaDe[i]) continue;
+				const collection = buffer[i];
+				for (const j in collection) {
+					const item = collection[j];
+					const option = document.createElement('option');
+					option.value = item._id['$oid'];
+					option.appendChild(document.createTextNode(item[this.conteudo.prop] || '！】Propriedade não encontrada.'));
+					elemValue.appendChild(option);
+				}
+			}
+		} else if (this.tipo === PART_TIME) {
+			elemValue.type = 'datetime-local';
+			elemValue.onchange = event => {
+				this.value = new Date(elemValue.value).getTime();
+			}
 		} else {
 			if (part.format) elemValue.value = part.format(this.value);
 			elemValue.addEventListener('blur', () => {
@@ -218,7 +269,12 @@ export class popupPart {
 			|| !bufferSave [slot])
 		{return;}
 
-		bufferSave [slot] [this.nome] = this.value;
+		bufferSave [slot] [this.nome] = this.tipo === PART_TIME
+			? {['$date']:{['$numberLong']:new Date(this.value).getTime()}}
+			: this.tipo === PART_DROP
+				? {['$oid']:this.value}
+				: this.value;
+		console.log(bufferSave [slot]);
 	}
 
 	remove () {
