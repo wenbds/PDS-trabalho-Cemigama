@@ -199,25 +199,6 @@ if (empty($_SESSION["session"])) {
 								</table>
 							</div>
 						</div>
-
-						<div class="row">
-							<div class="fator" id="s3-3"> <!-- faturamento -->
-								<h3>Faturamento</h3>
-								<span class="fator-reais">R$</span>
-								<span id="s3-3n">0</span>
-							</div>
-							<div class="fator" id="s3-4"> <!-- custo total -->
-								<h3>Custo Total</h3>
-								<span class="fator-reais">R$</span>
-								<span id="s3-4n">0</span>
-							</div>
-							<div class="fator" id="s3-5"> <!-- lucro total -->
-								<h3>Lucro Total</h3>
-								<span class="fator-reais">R$</span>
-								<span id="s3-5n">0</span>
-							</div>
-						</div>
-						
 					</div>
 
 					<div class="section" data-mode=4 id="main4"> <!-- Controle -->
