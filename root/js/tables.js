@@ -17,6 +17,36 @@ const getObject = (data, id) => {
 	console.log(id);
 }
 
+export class searchBar {
+	constructor (table) {
+		this.table = table;
+
+		const pesquisa = document.createElement('tr');
+		table.tbody.insertBefore(pesquisa,table.tbody.children[0]);
+		this.element = pesquisa;
+		const pesquisBg = document.createElement('th');
+		pesquisBg.scope = 'row';
+		pesquisBg.colSpan = table.qcol+1;
+		pesquisa.appendChild(pesquisBg);
+
+		const pesquisBarra = document.createElement('input');
+		pesquisBarra.id = `search${this.table}`
+		pesquisBarra.type = 'search';
+		pesquisBarra.placeholder = 'Pesquisa';
+		pesquisBg.appendChild(pesquisBarra);
+		this.elemvalue = pesquisBarra;
+		pesquisBarra.addEventListener('input', () => {
+			table.search(table.trackers[0].get, this.elemvalue.value);
+		});
+	}
+
+	remove () {
+		this.element.remove();
+		delete this.element;
+		delete this.table;
+	}
+}
+
 export default class table extends generico {
 	/*
 	 Variável `trackers` se refere à lista de propriedades
@@ -190,15 +220,8 @@ export default class table extends generico {
 		adicionBtn.appendChild(document.createTextNode('＋'));
 		adicionBg.appendChild(adicionBtn);
 
-		/* TODO@feat: Barra de pesquisa
-		const pesquisa = document.createElement('tr');
-		this.tbody.insertBefore(pesquisa,this.tbody.children[0]);
-		const pesquisBg = document.createElement('th');
-		pesquisBg.scope = 'row';
-		pesquisBg.colSpan = this.qcol+1;
-		pesquisa.appendChild(pesquisBg);
-		pesquisBg.appendChild(document.createTextNode('＋'));
-		*/
+		const pesquisa = new searchBar(this);
+		this.fodder.push(pesquisa);
 		
 		// Remover/Editar itens na tabela
 		const rmedHead = document.createElement('th');
@@ -261,19 +284,17 @@ export default class table extends generico {
 
 	search (prop, term) {
 		for (const i in this.rows) {
-			const thisData = this.data[this.bd][i];
+			var thisData = this.data[this.bd][i];
 			const thisRow  = this.rows[i];
-			if (typeof thisData === 'object') {
-				if (thisData['$oid'] !== undefined) {
-					thisData = getObject(this.data,thisData).nome
-				} else if (thisData['$date'] !== undefined) {
-					thisData = new Date(Number.parseFloat(thisData['$date']['$numberLong'])).toLocaleString('pt-BR');
-				} else {
-					thisData = '';
-				}
-			}
+			if (typeof thisData[prop] === 'object') {
+				if (thisData[prop]['$oid'] !== undefined) {
+					thisData = getObject(this.data,thisData[prop]).nome
+				} else if (thisData[prop]['$date'] !== undefined) {
+					thisData = new Date(Number.parseFloat(thisData[prop]['$date']['$numberLong'])).toLocaleString('pt-BR');
+				} else thisData = '';
+			} else thisData = thisData[prop]
 
-			if (!thisData[prop].toString().match(term)) {
+			if (!thisData.toString().toLowerCase().match(term.toLowerCase())) {
 				thisRow.classList.add('hidden')
 				continue;
 			}
