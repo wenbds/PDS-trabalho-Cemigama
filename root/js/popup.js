@@ -136,8 +136,16 @@ export const PART_LISTA  = 8;
 export const PART_TIME   = 9;
 export const PART_CPFCNPJ= 10;
 
+function virgulasRPontosViceVersa(floatN) {
+	return floatN.toString().replaceAll('.','~').replaceAll(',','.').replaceAll('~',',');
+}
 function parseVirgula(str) {
-	return Number.parseFloat(str.toString().replaceAll('.','').replace(',', '.'));
+	str = str.toString();
+	console.log(str);
+	if (str.lastIndexOf('.')>=0 && str.lastIndexOf(',') < 0) {
+		return parseVirgula(str.replaceAll('.',','));
+	}
+	return Number.parseFloat(str.replaceAll('.','').replace(',', '.'));
 }
 function parseCPF(str) {
 	var res = str.toString().substring(0,14).replaceAll('.','').replaceAll(',','')
@@ -153,14 +161,15 @@ function cpfFormat(str) {
 	return res.toString();
 }
 const dinheiro = new Intl.NumberFormat('pt-BR',{style:'decimal',currencyDisplay:'code',maximumFractionDigits:2,minimumFractionDigits:2});
+const numeral = new Intl.NumberFormat('pt-BR',{style:'decimal',currencyDisplay:'code'});
 export const PART_DATA = [ ];
 	PART_DATA [PART_TITULO] = {elem:'h2',noName:true,nameInside:true};
 	PART_DATA [PART_TEXTO]  = {elem:'p',noName:true,nameInside:true};
 	PART_DATA [PART_BOTAO]  = {elem:'button',noName:true,nameInside:true};
 	PART_DATA [PART_DIVISN] = {elem:'hr',noName:true,elemIsBase:true};
 	PART_DATA [PART_INPUT]  = {elem:'input'};
-	PART_DATA [PART_NUMERO] = {elem:'input',reader: self => parseVirgula(self), format: self => parseVirgula(self) };
-	PART_DATA [PART_MONEY]  = {elem:'input',reader: self => parseVirgula(self), format: self => dinheiro.format(parseVirgula(self))};
+	PART_DATA [PART_NUMERO] = {elem:'input', reader: self => parseVirgula(self), format: self => numeral.format(parseVirgula(self)) };
+	PART_DATA [PART_MONEY]  = {elem:'input', reader: self => parseVirgula(self), format: self => dinheiro.format(parseVirgula(self))};
 	PART_DATA [PART_DROP]   = {elem:'select'};
 	PART_DATA [PART_LISTA]  = {elem:'div'};
 	PART_DATA [PART_TIME]   = {elem:'input',parser: self => typeof self === 'object' && self['$date'] !== undefined ? new Date(Number.parseFloat(self['$date']['$numberLong'])).toString() : self};
@@ -185,14 +194,17 @@ export class popupPart {
 		this.nome = nome;
 		this.display = display;
 
-		if (typeof value !== 'function' && bufferSave [saveSlot] !== undefined && bufferSave [saveSlot] [nome] !== undefined) {
-			this.value = parser(bufferSave [saveSlot] [nome]);
-			delete bufferSave [saveSlot] [nome];
-		} else
-			this.value = parser(
-				typeof value === 'function' && this.tipo !== PART_BOTAO
-					? value()
-					: value);
+		const saved = bufferSave [saveSlot] !== undefined && bufferSave [saveSlot] [nome] !== undefined;
+		if (this.tipo !== PART_TIME && this.tipo !== PART_DROP) {
+			if (typeof value !== 'function' && saved) {
+				this.value = parser(bufferSave [saveSlot] [nome]);
+				delete bufferSave [saveSlot] [nome];
+			} else
+				this.value = parser(
+					typeof value === 'function' && this.tipo !== PART_BOTAO
+						? value()
+						: value);
+		}
 
 		this.conteudo = conteudo; // Utilizado por PART_DROP
 
@@ -213,7 +225,7 @@ export class popupPart {
 		elemValue.id = 'popup-'+this.nome+'v';
 		if (part.nameInside) elemValue.appendChild(document.createTextNode(this.display));
 		if (part.valueInside) elemValue.appendChild(document.createTextNode(this.value));
-		elemValue.value = this.value;
+		elemValue.value = part.format !== undefined ? part.format(this.value) : this.value;
 		this.element.value = elemValue;
 		elemBase.appendChild(elemValue);
 
@@ -242,15 +254,37 @@ export class popupPart {
 					option.value = item._id['$oid'];
 					option.appendChild(document.createTextNode(item[this.conteudo.prop] || '！】Propriedade não encontrada.'));
 					elemValue.appendChild(option);
+					if (saved && item._id['$oid'] === bufferSave [saveSlot] [nome] ['$oid']) {
+						elemValue.value = bufferSave [saveSlot] [nome] ['$oid'];
+						this.value = elemValue.value;
+					}
 				}
+			}
+
+			if (typeof value === 'function') value = value();
+			if (typeof value === 'object' && value['$oid'] !== undefined) {
+				elemValue.value = value['$oid'];
+				this.value = value['$oid'];
 			}
 		} else if (this.tipo === PART_TIME) {
 			elemValue.type = 'datetime-local';
 			elemValue.onchange = event => {
 				this.value = new Date(elemValue.value).getTime();
 			}
+			if (saved) {
+				this.value = new Date(bufferSave[saveSlot][nome]['$date']['$numberLong']);
+				elemValue.value = `${this.value.toJSON().slice(0,10)}T${this.value.toTimeString().slice(0,8)}`;
+				this.value = this.value.getTime();
+				delete bufferSave [saveSlot] [nome];
+			}
+			if (typeof value === 'function') value = value();
+			if (typeof value === 'object' && value['$date'] !== undefined) {
+				this.value = new Date(value['$date']['$numberLong']);
+				elemValue.value = `${this.value.toJSON().slice(0,10)}T${this.value.toTimeString().slice(0,8)}`;
+				this.value = this.value.getTime();
+			}
 		} else {
-			if (part.format) elemValue.value = part.format(this.value);
+			// if (part.format) elemValue.value = part.format(this.value);
 			elemValue.addEventListener('blur', () => {
 				if (part.format) elemValue.value = part.format(elemValue.value);
 				this.value = !part.reader ? elemValue.value : part.reader(elemValue.value);
@@ -274,7 +308,6 @@ export class popupPart {
 			: this.tipo === PART_DROP
 				? {['$oid']:this.value}
 				: this.value;
-		console.log(bufferSave [slot]);
 	}
 
 	remove () {

@@ -279,7 +279,7 @@ function renderizarPag () {
 		objCurrent = praCarregar[i];
 		elmCurrent = document.getElementById(strCurrent + 'n');
 
-		console.log('Carregando ' + strCurrent + ':',objCurrent);
+		// console.log('Carregando ' + strCurrent + ':',objCurrent);
 		objCurrent.render(context);
 	}
 }

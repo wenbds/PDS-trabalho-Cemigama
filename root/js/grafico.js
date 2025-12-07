@@ -1,4 +1,5 @@
 import { default as fator, generico } from './fator.js';
+
 export default class grafico extends generico {
 	context;
 	constructor (modo,i,label) {

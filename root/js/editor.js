@@ -67,14 +67,33 @@ async function checkCerto (self) {
 	await self.popup.save();
 	for (const i in self.popup.partes) {
 		const part = self.popup.partes [i];
-		if (part.element.value.required && !part.value) {
+		if (part.element.value.required && part.value === undefined) {
+			part.element.value.classList.add('perigo');
+			console.log(part);
 			return false;
+		} else {
+			part.element.value.classList.remove('perigo');
 		}
 	}
 	return true;
 }
 
-function factoryAdicionar (mode, nome, artigo) {
+function factoryConfirmar (title, msg, sim, não) {
+	var tpopup;
+	tpopup = new popup(handler.TIPO_NORMAL, title, msg, [
+		[[handler.PART_BOTAO,'btSim','Sim', async function(self) {
+			await tpopup.close();
+			await sim(self);
+		}],[handler.PART_BOTAO,'btNão','Não', async function(self) {
+			await tpopup.close();
+			await não(self);
+		}]]
+	])
+	tpopup.pop(body);
+	return popup;
+}
+
+function factoryAdicionar (mode, nome, artigo, f) {
 	return async function(self) {
 		if (!await checkCerto(self)) {
 			popResponse(handler.TIPO_ERRO, "Erro", "Há campos obrigatórios despreenchidos.");
@@ -82,7 +101,8 @@ function factoryAdicionar (mode, nome, artigo) {
 		}
 		await self.popup.close();
 		const r = handler.getBuffer(0);
-		console.log(r);
+		if (f !== undefined && typeof f === 'function')
+			if (!await f(self, r)) return;
 		pedido.fazer = 'w';
 		pedido.tipo = mode;
 		pedido.dados = r;
@@ -92,7 +112,7 @@ function factoryAdicionar (mode, nome, artigo) {
 	}
 }
 
-function factoryAdicionarSchema (mode, nome, artigo, schema) {
+function factoryAdicionarSchema (mode, nome, artigo, schema, f) {
 	const novo = [
 		`Cadastrar ${nome}`,
 		`Preencha todos os campos descrevendo ${artigo} ${nome} a ser cadastrad${artigo}.`,
@@ -107,16 +127,17 @@ function factoryAdicionarSchema (mode, nome, artigo, schema) {
 		}
 	}
 
-	novo[3].push([[handler.PART_BOTAO,'btCriar','Adicionar',factoryAdicionar(mode,nome,artigo)],
-	 [handler.PART_BOTAO,'btCancelar','Cancelar',async function(self) {
-		// TODO Confirmar? Ou simplesmente tira esse treco?
-		self.popup.modalSave = -1;
-		await self.popup.close();
+	novo[3].push([[handler.PART_BOTAO,'btCriar','Adicionar',factoryAdicionar(mode,nome,artigo,f)],
+	 [handler.PART_BOTAO,'btCancelar','Cancelar',function(self) {
+		factoryConfirmar('Confirmar', 'Você tem certeza que quer cancelar suas alterações?', async () => {
+			self.popup.modalSave = -1;
+			await self.popup.close();
+}, () => 0);
 	 }]]);
 	return novo;
 }
 
-function factoryAlterar (mode, nome) {
+function factoryAlterar (mode, nome, artigo, f) {
 	return async function(self) {
 		if (!await checkCerto(self)) {
 			popResponse(handler.TIPO_ERRO, "Erro", "Há campos obrigatórios despreenchidos.");
@@ -124,17 +145,19 @@ function factoryAlterar (mode, nome) {
 		}
 		await self.popup.close();
 		const r = handler.getBuffer(1);
+		if (f !== undefined && typeof f === 'function')
+			if (!await f(self, r)) return;
 		pedido.fazer = 'u';
 		pedido.tipo = mode;
 		pedido.id = selection[1]._id['$oid'];
 		pedido.dados = r;
 		const response = await edit();
-		if (response && response.ok) { popResponse(handler.TIPO_NORMAL, "Sucesso", `${String(nome).charAt(0).toUpperCase() + String(nome).slice(1)} ${r.nome} alterado`);
+		if (response && response.ok) { popResponse(handler.TIPO_NORMAL, "Sucesso", `${String(nome).charAt(0).toUpperCase() + String(nome).slice(1)} ${r.nome} alterad${artigo}`);
 		} else { popResponse(handler.TIPO_ERRO, "Erro", `Erro tentando alterar ${String(nome)}. Resposta: `+response.json()); }
 	}
 }
 
-function factoryAlterarSchema (mode, nome, artigo, schema) {
+function factoryAlterarSchema (mode, nome, artigo, schema, f) {
 	const novo = [
 		`Alterar ${nome}`,
 		() => `Preencha todos os campos descrevendo mudanças n${artigo} ${nome} ${selection[1].nome}.`,
@@ -156,14 +179,40 @@ function factoryAlterarSchema (mode, nome, artigo, schema) {
 		}
 	}
 
-	novo[3].push([[handler.PART_BOTAO,'btSalvar','Salvar',factoryAlterar(mode,nome)],
-	 [handler.PART_BOTAO,'btCancelar','Cancelar',async function(self) {
-		self.popup.modalSave = -1;
-		await self.popup.close();
+	novo[3].push([[handler.PART_BOTAO,'btSalvar','Salvar',factoryAlterar(mode,nome,artigo,f)],
+	 [handler.PART_BOTAO,'btCancelar','Cancelar', function(self) {
+		factoryConfirmar('Confirmar', 'Você tem certeza que quer cancelar suas alterações?', async () => {
+			self.popup.modalSave = -1;
+			await self.popup.close();
+}, () => 0);
 	 }]]);
 	return novo;
 }
 
+const jáFind = (i,r) => {
+	const objId = r;
+	const collection = editor.context[i];
+	for (const i in collection) {
+		const item = collection[i];
+		if (item._id === undefined || item._id['$oid'] === undefined
+			|| item._id['$oid'] !== objId) continue;
+		return [item, i];
+	}
+	return []; 
+}
+const jáRemoverF = {
+	[1]: (self, r) => {
+		let [item, i] = jáFind(0,r.produto['$oid']);
+		if (item === undefined) {
+			popResponse(handler.TIPO_ERRO, "Erro", `Material não encontrado. Não foi possível automaticamente reduzir a quantidade por ${r.quant}`);
+			return false;
+		}
+		item.estoq += r.quant;
+		editor.setWait(5);
+		editor.beUpdating({bd:{[0]:{[i]:{_id:{['$oid']:r.produto['$oid']},estoq:item.estoq+r.quant}}}});
+		return true;
+	}
+}
 const jáPronto = {
 	remover: [
 		"Remover item",
@@ -172,6 +221,8 @@ const jáPronto = {
 		[
 			[[handler.PART_BOTAO,'btSim','Sim', async function(self) {
 				await self.popup.close();
+				if (selection[0] !== undefined && jáRemoverF [selection[0].bd] !== undefined)
+					if (!await jáRemoverF [selection[0].bd] (self, selection[1])) return;
 				pedido.fazer = 'r';
 				pedido.tipo = selectMode; 
 				pedido.objeto = selection[1];
@@ -184,10 +235,33 @@ const jáPronto = {
 		]
 	],
 	adicionar0: await factoryAdicionarSchema(0, 'material', 'o', PSCHEMA_MATERIAL),
-	adicionar1: await factoryAdicionarSchema(1, 'venda', 'a', PSCHEMA_VENDA),
+	adicionar1: await factoryAdicionarSchema(1, 'venda', 'a', PSCHEMA_VENDA, (self, r) => {
+		let [item, i] = jáFind(0,r.produto['$oid']);
+		if (item === undefined) {
+			popResponse(handler.TIPO_ERRO, "Erro", `Material não encontrado. Não foi possível automaticamente reduzir a quantidade por ${r.quant}`);
+			return false;
+		}
+		item.estoq -= r.quant;
+		editor.setWait(5);
+		editor.beUpdating({bd:{[0]:{[i]:{_id:{['$oid']:r.produto['$oid']},estoq:item.estoq-r.quant}}}});
+		return true;
+	}),
 	adicionar2: await factoryAdicionarSchema(2, 'cliente', 'o(a)', PSCHEMA_CLIENTE),
 	alterar0: await factoryAlterarSchema(0, 'material', 'o', PSCHEMA_MATERIAL),
-	alterar1: await factoryAlterarSchema(1, 'venda', 'a', PSCHEMA_VENDA),
+	alterar1: await factoryAlterarSchema(1, 'venda', 'a', PSCHEMA_VENDA, (self, r) => {
+		let [item, i] = jáFind(0,r.produto['$oid']);
+		let [me, j] = jáFind(1,selection[1]._id['$oid']);
+		if (item === undefined) {
+			popResponse(handler.TIPO_ERRO, "Erro", `Material não encontrado. Não foi possível automaticamente alterar a quantidade para ${r.quant}`);
+			return false;
+		} else if (me === undefined) {
+			popResponse(handler.TIPO_ERRO, "Erro", `Venda não encontrada. Não foi possível automaticamente alterar a quantidade para ${r.quant}`);
+			return false;
+		}
+		editor.setWait(5);
+		editor.beUpdating({bd:{[0]:{[i]:{_id:{['$oid']:r.produto['$oid']},estoq:item.estoq+r.quant-me.quant}}}});
+		return true;
+	}),
 	alterar2: await factoryAlterarSchema(2, 'cliente', 'o(a)', PSCHEMA_CLIENTE)
 }
 
@@ -206,6 +280,7 @@ class editAPI {
 	shouldUpdate = false;
 	shouldBeUpdated = false;
 	diferenças;
+	context;
 
 	select (slot, variable) { selection [slot || 0] = variable; }
 	selectMode (mode) { selectMode = mode; }
@@ -216,7 +291,10 @@ class editAPI {
 	}
 
 	open (title, msg, partes, save, ctx) {
-		if (this.ctx) handler.setContext(ctx);
+		if (ctx !== undefined) {
+			this.context = ctx;
+			handler.setContext(ctx);
+		}
 		this.popup = new popup(handler.TIPO_NORMAL, title, msg, partes);
 		this.popup.modalSave = save;
 		this.popup.modal = true;
@@ -229,7 +307,10 @@ class editAPI {
 			throwErro('Lista não existe no índice: '+index.toString());
 			return;
 		}
-		if (ctx !== undefined) handler.setContext(ctx);
+		if (ctx !== undefined) {
+			this.context = ctx;
+			handler.setContext(ctx);
+		}
 		this.open(
 			typeof lista[0] === 'function' ? lista[0](ctx) : lista[0],
 			typeof lista[1] === 'function' ? lista[1](ctx) : lista[1],

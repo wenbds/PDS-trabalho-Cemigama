@@ -5,14 +5,16 @@ const getObject = (data, id) => {
 	for (const x in data) {
 		bd = data[x]
 		for (const y in bd) {
-			collection = data[y];
-			for (const z in collection) {
-				obj = collection[z];
-				if (obj._id === undefined || obj._id['$oid'] !== id['$oid']) continue;
-				return obj;
-			}
+			obj = bd[y];
+			if (obj._id === undefined || obj._id['$oid'] !== id['$oid']) continue;
+			return obj;
 		}
 	}
+	console.warn(`Não foi possível achar objeto. Dados:`);
+	console.warn('data:')
+	console.log(data);
+	console.warn('id:')
+	console.log(id);
 }
 
 export default class table extends generico {
@@ -126,7 +128,7 @@ export default class table extends generico {
 					this.getSelected();
 					editor.select(1, thisData);
 					thisData[tracker.get] += 1;
-					this.render({bd:thisData});
+					this.render({bd:this.data});
 					editor.setWait(10);
 					editor.beUpdating({bd:{[this.bd]:{[i]:{_id:{['$oid']:thisData._id['$oid']},[tracker.get]:thisData[tracker.get]}}}});
 				}
@@ -138,7 +140,7 @@ export default class table extends generico {
 					this.getSelected();
 					editor.select(1, thisData);
 					thisData[tracker.get] -= 1;
-					this.render({bd:thisData});
+					this.render({bd:this.data})
 					editor.setWait(10);
 					editor.beUpdating({bd:{[this.bd]:{[i]:{_id:{['$oid']:thisData._id['$oid']},[tracker.get]:thisData[tracker.get]}}}});
 				}
@@ -245,10 +247,16 @@ export default class table extends generico {
 	render (ctx) {
 		this.labelize();
 		this.data = ctx.bd
+		this.data[this.bd].sort((a,b) => a.nome.localeCompare(b.nome));
 		this.clear();
 		this.fill();
 		this.totalizar();
 		this.toqsFinais();
+	}
+
+	sort (compareFn) {
+		this.data[this.bd].sort(compareFn);
+		this.render({bd:this.data});
 	}
 }
 
