@@ -258,6 +258,28 @@ export default class table extends generico {
 		this.data[this.bd].sort(compareFn);
 		this.render({bd:this.data});
 	}
+
+	search (prop, term) {
+		for (const i in this.rows) {
+			const thisData = this.data[this.bd][i];
+			const thisRow  = this.rows[i];
+			if (typeof thisData === 'object') {
+				if (thisData['$oid'] !== undefined) {
+					thisData = getObject(this.data,thisData).nome
+				} else if (thisData['$date'] !== undefined) {
+					thisData = new Date(Number.parseFloat(thisData['$date']['$numberLong'])).toLocaleString('pt-BR');
+				} else {
+					thisData = '';
+				}
+			}
+
+			if (!thisData[prop].toString().match(term)) {
+				thisRow.classList.add('hidden')
+				continue;
+			}
+			thisRow.classList.remove('hidden');
+		}
+	}
 }
 
 export class itemBarra {

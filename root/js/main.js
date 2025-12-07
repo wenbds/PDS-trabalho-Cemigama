@@ -23,10 +23,9 @@ const modos = {
 		dashboard:0,
 		cadastro:1,
 		alterar:2,
-		saida:3,
+		vendas:3,
 		controle:4,
-		vendas:5,
-		clientes:6
+		clientes:5
 	}
 let current = modos.dashboard; // o modo selecionado
 
@@ -34,9 +33,8 @@ const modosNomes = [
 	"Dashboard",
 	"Cadastro de Produtos",
 	"Alterar Produtos",
-	"Saída de Produtos",
-	"Controle de Estoque",
 	"Registro de Vendas",
+	"Controle de Estoque",
 	"Cadastro de Clientes"
 ]
 
@@ -174,17 +172,17 @@ function formatDinheiro (val) { return dinheiro.format(Number.parseFloat(val)); 
 
 const carregaveis = [ // Elementos de dados ("s0-0", "s0-1", etc.)
 	[], [], [],
-	[], [], [], []
+	[], [], []
 ];
 // // - DASHBOARD - // //
 carregaveis [modos.dashboard][0] = new numerico(0,0,'Total em Estoque', false,
 	async function () { BDFUNC_COL = 0; return bdFunc (BDFUNC_TOTAL, 'estoq'); },
 	false);
-carregaveis [modos.dashboard][1] = new numerico(0,1,'Custo Total', true,
-	function () { BDFUNC_COL = 0; return bdFunc (BDFUNC_TOTAL_QNT, 'custoUni'); },
-	false);
-carregaveis [modos.dashboard][2] = new numerico(0,2,'Faturamento', true,
+carregaveis [modos.dashboard][1] = new numerico(0,1,'Faturamento', true,
 	function () { BDFUNC_COL = 0; return bdFunc (BDFUNC_TOTAL_QNT, 'precoUni'); },
+	false);
+carregaveis [modos.dashboard][2] = new numerico(0,2,'Custo Total', true,
+	function () { BDFUNC_COL = 0; return bdFunc (BDFUNC_TOTAL_QNT, 'custoUni'); },
 	false);
 carregaveis [modos.dashboard][3] = new numerico(0,3,'Lucro', true,
 	function () { BDFUNC_COL = 0; return bdFunc (BDFUNC_TOTAL_QNT, 'precoUni') - bdFunc (BDFUNC_TOTAL_QNT, 'custoUni'); },
@@ -216,51 +214,43 @@ carregaveis [modos.cadastro][1] = new table(1,1,'Cadastro de Produtos', 0, [
 carregaveis [modos.alterar][0] = new table(2,0,'Produtos Cadastrados', 0, [
 		{nome:'Produto',total:false,get:'nome'},
 		{nome:'Distribuidora',total:false,get:'distribuidora'},
+		{nome:'Tipo',total:false,get:'tipo'},
 		{nome:'Quantidade',total:true,increment:true,get:'estoq'},
 		{nome:'Custo Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.custoUni)},
 		{nome:'Preço Unitário (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.precoUni)},
 		{nome:'Lucro (R$)',total:true,totalget: x => formatDinheiro(x),get: x => formatDinheiro(x.precoUni * x.estoq - x.custoUni * x.estoq)}
 	 ]);
 
-// // - SAÍDA - // //
-// relatório com o custo e lucro obtido
-carregaveis [modos.saida][0] = new numerico(3,0,'Custo Total', true,
-	function () { BDFUNC_COL = 0; return bdFunc (BDFUNC_TOTAL_QNT, 'custoUni'); },
-	false);
-carregaveis [modos.saida][1] = new numerico(3,1,'Faturamento', true,
-	function () { BDFUNC_COL = 0; return bdFunc (BDFUNC_TOTAL_QNT, 'precoUni'); },
-	false);
-
-// // - CONTROLE - // //
-// Imprime o que está de estoque baixo, produtos menos vendidos e mais vendidos.
-carregaveis [modos.controle][0] = new numerico(4,0,'Total em Estoque (R$)', true,
-	function () { return bdFunc (BDFUNC_TOTAL_QNT, 'precoUni'); },
-	false);
-
 // // - VENDAS - // //
-// Gerencia vendas efetivadas.
-carregaveis [modos.vendas][0] = new table(5,0,'Vendas Efetivadas', 1, [
+// Registro de vendas; geração de relatório de estoque. TODO
+carregaveis [modos.vendas][0] = new numerico(3,0,'Total de Pedidos', false,
+	function () { return bd[1].length; },
+	false);
+carregaveis [modos.vendas][1] = new numerico(3,1,'Valor Total de Compras', true,
+	async function () { BDFUNC_COL = 1; return bdFunc (BDFUNC_TOTAL, 'valor'); },
+	false);
+carregaveis [modos.vendas][2] = new table(3,2,'Vendas Registradas', 1, [
 		{nome:'Produto',total:false,get:'produto',obj:'nome'},
 		{nome:'Cliente',total:false,get:'cliente',obj:'nome'},
 		{nome:'Descrição',total:false,get:'nome'},
 		{nome:'Data',total:false,get:'data'},
 		{nome:'Valor (R$)',total:true,totalget: x => formatDinheiro(x), get: x => formatDinheiro(x.valor)},
 		{nome:'Quantidade do Produto',total:true,get:'quant'},
-], {
-	adicionando: (self) => {
-		
-	}
-});
-carregaveis [modos.vendas][1] = new numerico(5,1,'Total de Pedidos', false,
+]);
+
+// // - CONTROLE - // //
+// Imprime o que está de estoque baixo, produtos menos vendidos e mais vendidos.
+carregaveis [modos.controle][0] = new numerico(4,0,'Total em Estoque', false,
+	async function () { BDFUNC_COL = 0; return bdFunc (BDFUNC_TOTAL, 'estoq'); },
+	false);
+carregaveis [modos.controle][1] = new numerico(4,1,'Total de Pedidos', false,
 	function () { return bd[1].length; },
 	false);
-carregaveis [modos.vendas][2] = new numerico(5,2,'Valor Total de Compras', true,
-	async function () { BDFUNC_COL = 1; return bdFunc (BDFUNC_TOTAL, 'valor'); },
-	false);
+carregaveis [modos.controle][2] = new combarra(4,2,'Estoque', 0); 
 
 // // - CLIENTES - // //
 // Gerencia clientes.
-carregaveis [modos.clientes][0] = new table(6,0,'Cadastro de Clientes', 2, [
+carregaveis [modos.clientes][0] = new table(5,0,'Cadastro de Clientes', 2, [
 		{nome:'Nome',total:false,get:'nome'},
 		{nome:'Endereço',total:false,get:'endereco'},
 		{nome:'CPF/CNPJ',total:false,get:'cpf-cnpj'},

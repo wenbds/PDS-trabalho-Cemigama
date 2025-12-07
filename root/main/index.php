@@ -29,10 +29,9 @@ if (empty($_SESSION["session"])) {
 					<button class="marca-pag" id='marca0' data-mode=0 data-sel=true type="button">Dashboard</button>
 					<button class="marca-pag" id='marca1' data-mode=1 data-sel=false type="button">Cadastro</button>
 					<button class="marca-pag" id='marca2' data-mode=2 data-sel=false type="button">Alterar</button>
-					<button class="marca-pag" id='marca3' data-mode=3 data-sel=false type="button">Saída</button>
+					<button class="marca-pag" id='marca3' data-mode=3 data-sel=false type="button">Vendas</button>
 					<button class="marca-pag" id='marca4' data-mode=4 data-sel=false type="button">Controle</button>
-					<button class="marca-pag" id='marca5' data-mode=5 data-sel=false type="button">Vendas</button>
-					<button class="marca-pag" id='marca6' data-mode=6 data-sel=false type="button">Clientes</button>
+					<button class="marca-pag" id='marca5' data-mode=5 data-sel=false type="button">Clientes</button>
 				</div>
 
 				<div id="main-primary" data-current=0>
@@ -44,24 +43,24 @@ if (empty($_SESSION["session"])) {
 								<h3>Total em Estoque</h3>
 								<span id="s0-0n">0</span>
 							</div>
-							<div class="fator" id="s0-1"> <!-- custo total -->
-								<h3>Custo Total</h3>
+							<div class="fator" id="s0-1"> <!-- faturamento -->
+								<h3>Faturamento</h3>
 								<span class="fator-reais">R$</span>
 								<span id="s0-1n">0</span>
 							</div>
-							<div class="fator" id="s0-2"> <!-- lucro total -->
+							<div class="fator" id="s0-2"> <!-- custo total -->
 								<h3>Custo Total</h3>
 								<span class="fator-reais">R$</span>
 								<span id="s0-2n">0</span>
 							</div>
-							<div class="fator" id="s0-3"> <!-- faturamento -->
-								<h3>Faturamento</h3>
+							<div class="fator" id="s0-3"> <!-- lucro total -->
+								<h3>Lucro Total</h3>
 								<span class="fator-reais">R$</span>
 								<span id="s0-3n">0</span>
 							</div>
 						</div>
 						<div class="row">
-							<div class="fator grafico" id="s0-4"> <!-- saldo acumulado -->
+							<div class="fator grafico hidden" id="s0-4"> <!-- saldo acumulado TODO -->
 								<h3>Saldo Acumulado</h3>
 								<canvas id="s0-4n"></canvas>
 							</div>
@@ -155,148 +154,23 @@ if (empty($_SESSION["session"])) {
 						</div>
 					</div>
 					
-					<div class="section" data-mode=3 id="main3"> <!-- Saída -->
+					<div class="section" data-mode=3 id="main3"> <!-- Vendas -->
 						<div class="row">
-							<div class="fator" id="s3-0"> <!-- custo total -->
-								<h3>Custo Total</h3>
-								<span class="fator-reais">R$</span>
+							<div class="fator" id="s3-0">
+								<h3>Total de Pedidos</h3>
 								<span id="s3-0n">0</span>
 							</div>
-							<div class="fator" id="s3-1"> <!-- faturamento -->
-								<h3>Faturamento</h3>
+							<div class="fator" id="s3-1">
+								<h3>Valor Total de Compras</h3>
 								<span class="fator-reais">R$</span>
 								<span id="s3-1n">0</span>
 							</div>
 						</div>
+
 						<div class="row">
 							<div class="fator tabela" id="s3-2">
-								<h3>Controle de Saída</h3>
-								<table id="s3-2n">
-									<thead>
-										<tr>
-											<th scope="col">Produto</th>
-											<th scope="col">Data</th>
-											<th scope="col">Fornecedor</th>
-											<th scope="col">Quantidade</th>
-											<th scope="col">Custo Unitário (R$)</th>
-											<th scope="col">Valor Total (R$)</th>
-										</tr>
-									</thead>
-									<tbody>
-										<tr>
-											<th scope="row">Teste</th>
-											<td>00/00/0000</td>
-											<td>Testadores Ltda.</td>
-											<td>30</td>
-											<td>1000</td>
-											<td>1200</td>
-										</tr>
-									</tbody>
-									<tfoot>
-										<tr>
-											<th scope="row" colspan="4">Total</th>
-											<td>1000</td>
-											<td>1200</td>
-										</tr>
-									</tfoot>
-								</table>
-							</div>
-						</div>
-					</div>
-
-					<div class="section" data-mode=4 id="main4"> <!-- Controle -->
-						<h2>Controle de Estoque</h2>
-						<div class="row">
-							<div class="fator" id="s4-0">
-								<h3>Total em Estoque</h3>
-								<span class="fator-reais">R$</span>
-								<span id="s4-0n">0</span>
-							</div>
-						</div>
-						<div class="row">
-							<div class="fator tabela" id="s4-3">
-								<h3>Entradas Recentes</h3>
-								<table id="s4-3n">
-									<thead>
-										<tr>
-											<th scope="col">Produto</th>
-											<th scope="col">Data</th>
-											<th scope="col">Quantidade</th>
-											<th scope="col">Valor Unitário (R$)</th>
-											<th scope="col">Valor Total (R$)</th>
-										</tr>
-									</thead>
-									<tbody>
-										<tr>
-											<th scope="row">Teste</th>
-											<td>00/00/0000</td>
-											<td>0</td>
-											<td>300</td>
-											<td>0</td>
-										</tr>
-									</tbody>
-									<tfoot>
-										<tr>
-											<th scope="row" colspan="2">Total</th>
-											<td>1000</td>
-											<td>1000</td>
-											<td>1000</td>
-										</tr>
-									</tfoot>
-								</table>
-							</div>
-							<div class="fator tabela" id="s4-4">
-								<h3>Saídas Recentes</h3>
-								<table id="s4-4n">
-									<thead>
-										<tr>
-											<th scope="col">Produto</th>
-											<th scope="col">Data</th>
-											<th scope="col">Quantidade</th>
-											<th scope="col">Valor Unitário (R$)</th>
-											<th scope="col">Valor Total (R$)</th>
-										</tr>
-									</thead>
-									<tbody>
-										<tr>
-											<th scope="row">Teste</th>
-											<td>00/00/0000</td>
-											<td>0</td>
-											<td>300</td>
-											<td>0</td>
-										</tr>
-									</tbody>
-									<tfoot>
-										<tr>
-											<th scope="row" colspan=2>Total</th>
-											<td>1000</td>
-											<td>1000</td>
-											<td>1000</td>
-										</tr>
-									</tfoot>
-								</table>
-							</div>
-
-						</div>
-					</div>
-
-					<div class="section" data-mode=5 id="main5"> <!-- Vendas -->
-						<div class="row">
-							<div class="fator" id="s5-1">
-								<h3>Total de Pedidos</h3>
-								<span id="s5-1n">0</span>
-							</div>
-							<div class="fator" id="s5-2">
-								<h3>Valor Total de Compras</h3>
-								<span class="fator-reais">R$</span>
-								<span id="s5-2n">0</span>
-							</div>
-						</div>
-
-						<div class="row">
-							<div class="fator tabela" id="s5-0">
 								<h3>Registro de Compras</h3>
-								<table id="s5-0n">
+								<table id="s3-2n">
 									<thead>
 										<tr>
 											<th scope="col">Produto</th>
@@ -325,13 +199,56 @@ if (empty($_SESSION["session"])) {
 								</table>
 							</div>
 						</div>
+
+						<div class="row">
+							<div class="fator" id="s3-3"> <!-- faturamento -->
+								<h3>Faturamento</h3>
+								<span class="fator-reais">R$</span>
+								<span id="s3-3n">0</span>
+							</div>
+							<div class="fator" id="s3-4"> <!-- custo total -->
+								<h3>Custo Total</h3>
+								<span class="fator-reais">R$</span>
+								<span id="s3-4n">0</span>
+							</div>
+							<div class="fator" id="s3-5"> <!-- lucro total -->
+								<h3>Lucro Total</h3>
+								<span class="fator-reais">R$</span>
+								<span id="s3-5n">0</span>
+							</div>
+						</div>
+						
 					</div>
 
-					<div class="section" data-mode=6 id="main6"> <!-- Clientes -->
+					<div class="section" data-mode=4 id="main4"> <!-- Controle -->
+						<h2>Controle de Estoque</h2>
 						<div class="row">
-							<div class="fator tabela" id="s6-0">
+							<div class="fator" id="s4-0"> <!-- total estoque -->
+								<h3>Total em Estoque</h3>
+								<span id="s4-0n">0</span>
+							</div>
+							<div class="fator" id="s4-1">
+								<h3>Total de Pedidos</h3>
+								<span id="s4-1n">0</span>
+							</div>
+						</div>
+						
+						<div class="row">
+							<div class="fator com-barra" id="s4-2"> <!-- estoque -->
+								<h3>Estoque</h3>
+								<div id="s4-2n">
+									<div class="item-barra">Teste</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="section" data-mode=5 id="main5"> <!-- Clientes -->
+						<h2>Clientes comuns</h2>
+						<div class="row">
+							<div class="fator tabela" id="s5-0">
 								<h3>Cadastro de Clientes</h3>
-								<table id="s6-0n">
+								<table id="s5-0n">
 									<thead>
 										<tr>
 											<th scope="col">Socorro</th>

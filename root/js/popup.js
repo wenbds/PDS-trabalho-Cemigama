@@ -141,7 +141,6 @@ function virgulasRPontosViceVersa(floatN) {
 }
 function parseVirgula(str) {
 	str = str.toString();
-	console.log(str);
 	if (str.lastIndexOf('.')>=0 && str.lastIndexOf(',') < 0) {
 		return parseVirgula(str.replaceAll('.',','));
 	}
@@ -279,7 +278,7 @@ export class popupPart {
 			}
 			if (typeof value === 'function') value = value();
 			if (typeof value === 'object' && value['$date'] !== undefined) {
-				this.value = new Date(value['$date']['$numberLong']);
+				this.value = new Date(value['$date']['$numberLong'] || Date.now().getTime());
 				elemValue.value = `${this.value.toJSON().slice(0,10)}T${this.value.toTimeString().slice(0,8)}`;
 				this.value = this.value.getTime();
 			}
