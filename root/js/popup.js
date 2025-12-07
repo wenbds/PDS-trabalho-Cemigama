@@ -278,7 +278,7 @@ export class popupPart {
 			}
 			if (typeof value === 'function') value = value();
 			if (typeof value === 'object' && value['$date'] !== undefined) {
-				this.value = new Date(value['$date']['$numberLong'] || Date.now().getTime());
+				this.value = new Date(value['$date']['$numberLong'] || Date.now());
 				elemValue.value = `${this.value.toJSON().slice(0,10)}T${this.value.toTimeString().slice(0,8)}`;
 				this.value = this.value.getTime();
 			}
